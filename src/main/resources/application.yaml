@@ -1,0 +1,15 @@
+service-configs:
+  keycloak:
+    issuer-uri: ${KEYCLOAK_ISSUER_URI}
+    jwt-set-uri: ${service-configs.keycloak.issuer-uri}/protocol/openid-connect/certs
+  web-client:
+    time-response: ${TIME_RESPONSE}
+  kinescope:
+    load-video-url: ${VIDEO_STORAGE_LOAD_URL}
+    v1-video-url: ${VIDEO_STORAGE_V1_URL}
+    token: ${VIDEO_STORAGE_TOKEN}
+    project-id: ${VIDEO_STORAGE_PROJECT_ID}
+
+logging:
+  level:
+    org.springframework.security.oauth2: DEBUG
