@@ -1,4 +1,4 @@
-package system.kinescope.dto;
+package system.integration.kinescope.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

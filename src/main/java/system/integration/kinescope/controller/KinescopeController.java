@@ -1,13 +1,13 @@
-package system.kinescope.controller;
+package system.integration.kinescope.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import reactor.core.publisher.Mono;
-import system.kinescope.dto.KinescopeUploadRequest;
-import system.kinescope.dto.KinescopeUploadResponse;
-import system.kinescope.dto.KinescopeVideoDataWrapper;
-import system.kinescope.service.KinescopeService;
+import system.integration.kinescope.dto.KinescopeUploadRequest;
+import system.integration.kinescope.dto.KinescopeUploadResponse;
+import system.integration.kinescope.dto.KinescopeVideoDataWrapper;
+import system.integration.kinescope.service.KinescopeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/integration/kinescoope/video")
+@RequestMapping("/integration/video-storage")
 @RequiredArgsConstructor
 public class KinescopeController {
     private final KinescopeService kinescopeService;

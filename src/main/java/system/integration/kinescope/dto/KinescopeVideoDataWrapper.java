@@ -1,4 +1,4 @@
-package system.kinescope.dto;
+package system.integration.kinescope.dto;
 
 import lombok.Getter;
 import lombok.Setter;

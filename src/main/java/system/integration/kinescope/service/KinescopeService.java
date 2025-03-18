@@ -1,13 +1,13 @@
-package system.kinescope.service;
+package system.integration.kinescope.service;
 
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-import system.kinescope.dto.KinescopeUploadRequest;
-import system.kinescope.dto.KinescopeUploadResponse;
+import system.integration.kinescope.dto.KinescopeUploadRequest;
+import system.integration.kinescope.dto.KinescopeUploadResponse;
+import system.integration.kinescope.dto.KinescopeVideoDataWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import system.kinescope.dto.KinescopeVideoDataWrapper;
 
 import java.util.HashMap;
 import java.util.Map;

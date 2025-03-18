@@ -1,4 +1,4 @@
-package system.kinescope.service;
+package system.integration.kinescope.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
