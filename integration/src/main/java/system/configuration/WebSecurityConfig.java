@@ -24,7 +24,8 @@ public class WebSecurityConfig {
                                 antMatcher("/swagger-ui/**"),
                                 antMatcher("/v3/api-docs/**"),
                                 antMatcher("/swagger-ui.html"),
-                                antMatcher("/actuator/health/**")
+                                antMatcher("/actuator/health/**"),
+                                antMatcher("/**")
                         )
                         .permitAll()
                         .anyRequest().authenticated()
