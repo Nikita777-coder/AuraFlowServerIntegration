@@ -1,3 +1,10 @@
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: ${MULTIPART_FILE_SIZE_THRESHOLD}
+      max-file-size: ${MULTIPART_MAX_FILE_SIZE}
+      max-request-size: ${MULTIPART_MAX_REQUEST_SIZE}
 service-configs:
   keycloak:
     issuer-uri: ${KEYCLOAK_ISSUER_URI}
@@ -9,6 +16,11 @@ service-configs:
     v1-video-url: ${VIDEO_STORAGE_V1_URL}
     token: ${VIDEO_STORAGE_TOKEN}
     project-id: ${VIDEO_STORAGE_PROJECT_ID}
+  yandex-cloud:
+    endpoint: ${YANDEX_CLOUD_ENDPOINT}
+    bucket-name: ${YANDEX_CLOUD_BUCKET_NAME}
+    access-key: ${YANDEX_CLOUD_ACCESS_KEY}
+    secret-key: ${YANDEX_CLOUD_SECRET_KEY}
 
 logging:
   level:

@@ -1,13 +1,13 @@
-package system.integration.kinescope.service;
+package system.integration.videostorage.service;
 
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-import system.integration.kinescope.dto.KinescopeUploadRequest;
-import system.integration.kinescope.dto.KinescopeUploadResponse;
-import system.integration.kinescope.dto.KinescopeVideoDataWrapper;
+import system.integration.videostorage.dto.KinescopeUploadResponse;
+import system.integration.videostorage.dto.KinescopeVideoDataWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import system.integration.videostorage.dto.VideoStorageUploadRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +29,7 @@ public class KinescopeService {
 
     @Value("${service-configs.kinescope.project-id}")
     private String kinescopeProjectId;
-    public KinescopeUploadResponse upload(KinescopeUploadRequest kinescopeUploadRequest) {
+    public KinescopeUploadResponse upload(VideoStorageUploadRequest kinescopeUploadRequest) {
         if (kinescopeUploadRequest.getUploadVideo() == null && kinescopeUploadRequest.getSourceLink() == null) {
             throw new IllegalArgumentException("you must fill meditation from local storage or provide link to it");
         }
