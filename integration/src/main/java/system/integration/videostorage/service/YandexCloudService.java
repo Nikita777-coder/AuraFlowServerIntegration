@@ -1,5 +1,6 @@
 package system.integration.videostorage.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,12 +30,17 @@ public class YandexCloudService {
 
     @Value("${service-configs.yandex-cloud.secret-key}")
     private String SECRET_KEY;
-    private final S3Client s3 = S3Client.builder()
-            .endpointOverride(URI.create(ENDPOINT))
-            .credentialsProvider(StaticCredentialsProvider.create(
-                    AwsBasicCredentials.create(ACCESS_KEY, SECRET_KEY)))
-            .region(Region.of("ru-central1"))
-            .build();
+    private S3Client s3;
+
+    @PostConstruct
+    private void initS3() {
+        s3 = S3Client.builder()
+                .endpointOverride(URI.create(ENDPOINT))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(ACCESS_KEY, SECRET_KEY)))
+                .region(Region.of("ru-central1"))
+                .build();
+    }
     public String upload(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (videoStorageUploadRequest.getUploadVideo() == null && videoStorageUploadRequest.getSourceLink() == null) {
             throw new IllegalArgumentException("you must fill meditation from local storage or provide link to it");
