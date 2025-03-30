@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class VideoStorageUploadResponse {
-    private KinescopeUploadResponse kinescopeUploadResponse;
+    private KinescopeUploadResponse uploadResponse;
     private boolean wasUploadFromUrl;
 }

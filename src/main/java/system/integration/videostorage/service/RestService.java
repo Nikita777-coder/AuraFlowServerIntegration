@@ -45,6 +45,17 @@ public class RestService {
                 .retrieve()
                 .bodyToMono(tClass);
     }
+    public <T> T getWithoutMono(String url,
+                           Map<String, String> headers,
+                           Class<T> tClass) {
+        return webClient
+                .get()
+                .uri(url)
+                .headers(headers1 -> headers1.setAll(headers))
+                .retrieve()
+                .bodyToMono(tClass)
+                .block();
+    }
 
     public void delete(String url, Map<String, String> headers) {
         webClient

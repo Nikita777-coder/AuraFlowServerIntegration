@@ -10,12 +10,15 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import system.integration.videostorage.dto.KinescopeUploadResponse;
+import system.integration.videostorage.dto.KinescopeVideoDataWrapper;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
 import system.integration.videostorage.dto.VideoStorageUploadResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,9 +41,6 @@ public class YandexCloudService {
 
     @Value("${service-configs.yandex-cloud.secret-key}")
     private String SECRET_KEY;
-
-    @Value("${service-configs.yandex-cloud.youtube-cookies}")
-    private String cookiesFilePath;
     private S3Client s3;
 
     @PostConstruct
@@ -63,6 +63,31 @@ public class YandexCloudService {
 
         return uploadByLink(videoStorageUploadRequest);
     }
+    public String loadFromKinescope(KinescopeVideoDataWrapper data) {
+        var d = kinescopeService.getWithAdditionalInfo(data.getData().getId());
+
+        InputStream in = null;
+        try {
+            in = new URL(d.getKinescopeAssets().get(1).getDownloadLink()).openStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (!Files.exists(root)) {
+            try {
+                Files.createDirectories(root); // Создаём директорию, если она не существует
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // Получаем имя файла
+        String fileName = data.getData().getTitle();
+        Path targetLocation = root.resolve("/upload/" + fileName);
+        copyFile(in, targetLocation);
+
+        return "success";
+    }
     private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (!Files.exists(root)) {
             try {
@@ -76,9 +101,19 @@ public class YandexCloudService {
         String fileName = videoStorageUploadRequest.getUploadVideo().getOriginalFilename();
         Path targetLocation = root.resolve("/upload/" + fileName); // Полный путь к файлу
 
-        // Копируем файл в целевую директорию
         try {
-            Files.copy(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
+            return copyFile(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private VideoStorageUploadResponse copyFile(
+            InputStream in,
+            Path targetLocation
+    ) {
+        try {
+            Files.copy(in, targetLocation);
         } catch (FileAlreadyExistsException ex) {
 
         }
@@ -92,7 +127,7 @@ public class YandexCloudService {
 
     private VideoStorageUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
         var b = kinescopeService.upload(videoStorageUploadRequest);
-        b.getKinescopeUploadResponse().getData().setEmbedLink(
+        b.getUploadResponse().getData().setEmbedLink(
                 String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoStorageUploadRequest.getTitle() + ".mp4")
         );
 
@@ -114,7 +149,7 @@ public class YandexCloudService {
                 false
         );
 
-        b.getKinescopeUploadResponse().getData().setEmbedLink(
+        b.getUploadResponse().getData().setEmbedLink(
                 String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoFile.getName())
         );
 

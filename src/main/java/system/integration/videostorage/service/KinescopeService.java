@@ -2,13 +2,10 @@ package system.integration.videostorage.service;
 
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-import system.integration.videostorage.dto.KinescopeUploadResponse;
-import system.integration.videostorage.dto.KinescopeVideoDataWrapper;
+import system.integration.videostorage.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import system.integration.videostorage.dto.VideoStorageUploadRequest;
-import system.integration.videostorage.dto.VideoStorageUploadResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +57,14 @@ public class KinescopeService {
                 getUriWithVideoIdAsPathVariable(kinescopeV1VideoUrl, videoId),
                 headers,
                 KinescopeVideoDataWrapper.class);
+    }
+    public KinescopeVideoDataWithAditionalFields getWithAdditionalInfo(UUID videoId) {
+        Map<String, String> headers = getDefaultHeaders();
+
+        return restService.getWithoutMono(
+                getUriWithVideoIdAsPathVariable(kinescopeV1VideoUrl, videoId),
+                headers,
+                KinescopeVideoDataWithAditionalFields.class);
     }
     public void delete(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/integration/video-storage")
+@RequestMapping("/integration/video-storage/kinescope")
 @RequiredArgsConstructor
 public class KinescopeController {
     private final KinescopeService kinescopeService;

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import system.integration.videostorage.dto.KinescopeVideoDataWrapper;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
 import system.integration.videostorage.dto.VideoStorageUploadResponse;
 import system.integration.videostorage.service.YandexCloudService;
@@ -39,6 +40,13 @@ public class YandexCloudController {
                         .build()
         );
 
+        return ans;
+    }
+
+    @PostMapping("/upload-from-kinescope")
+    @ResponseBody
+    public String uploadLoadedVideoFromKinescopeToYandex(@RequestBody KinescopeVideoDataWrapper data) {
+        var ans = yandexCloudService.loadFromKinescope(data);
         return ans;
     }
 
