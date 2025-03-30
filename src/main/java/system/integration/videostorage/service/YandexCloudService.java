@@ -9,14 +9,13 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import system.integration.videostorage.dto.KinescopeUploadResponse;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
-import system.integration.videostorage.dto.YandexCloudUploadResponse;
+import system.integration.videostorage.dto.VideoStorageUploadResponse;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,7 +52,7 @@ public class YandexCloudService {
                 .region(Region.of("ru-central1"))
                 .build();
     }
-    public YandexCloudUploadResponse upload(VideoStorageUploadRequest videoStorageUploadRequest) {
+    public VideoStorageUploadResponse upload(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (videoStorageUploadRequest.getUploadVideo() == null && videoStorageUploadRequest.getSourceLink() == null) {
             throw new IllegalArgumentException("you must fill meditation from local storage or provide link to it");
         }
@@ -64,7 +63,7 @@ public class YandexCloudService {
 
         return uploadByLink(videoStorageUploadRequest);
     }
-    private YandexCloudUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
+    private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (!Files.exists(root)) {
             try {
                 Files.createDirectories(root); // Создаём директорию, если она не существует
@@ -91,15 +90,15 @@ public class YandexCloudService {
         return upload(videoFile);
     }
 
-    private YandexCloudUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
-        var b = new YandexCloudUploadResponse();
-        b.setWasUploadFromUrl(true);
-        b.setKinescopeUploadResponse(kinescopeService.upload(videoStorageUploadRequest));
-        b.setLink(String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoStorageUploadRequest.getTitle() + ".mp4"));
+    private VideoStorageUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
+        var b = kinescopeService.upload(videoStorageUploadRequest);
+        b.getKinescopeUploadResponse().getData().setEmbedLink(
+                String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoStorageUploadRequest.getTitle() + ".mp4")
+        );
 
         return b;
     }
-    private YandexCloudUploadResponse upload(File videoFile) {
+    private VideoStorageUploadResponse upload(File videoFile) {
         String objectKey = "videos/" + videoFile.getName();
 
         var ans = s3.putObject(
@@ -110,9 +109,14 @@ public class YandexCloudService {
                 Paths.get(videoFile.getAbsolutePath())
         );
 
-        var b = new YandexCloudUploadResponse();
-        b.setLink(String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoFile.getName()));
-        b.setWasUploadFromUrl(false);
+        var b = new VideoStorageUploadResponse(
+                new KinescopeUploadResponse(),
+                false
+        );
+
+        b.getKinescopeUploadResponse().getData().setEmbedLink(
+                String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoFile.getName())
+        );
 
         return b;
 

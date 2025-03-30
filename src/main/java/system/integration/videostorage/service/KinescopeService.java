@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
+import system.integration.videostorage.dto.VideoStorageUploadResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class KinescopeService {
 
     @Value("${service-configs.kinescope.project-id}")
     private String kinescopeProjectId;
-    public KinescopeUploadResponse upload(VideoStorageUploadRequest kinescopeUploadRequest) {
+    public VideoStorageUploadResponse upload(VideoStorageUploadRequest kinescopeUploadRequest) {
         if (kinescopeUploadRequest.getUploadVideo() == null && kinescopeUploadRequest.getSourceLink() == null) {
             throw new IllegalArgumentException("you must fill meditation from local storage or provide link to it");
         }
@@ -40,11 +41,17 @@ public class KinescopeService {
 
         if (kinescopeUploadRequest.getUploadVideo() != null) {
             headers.put("X-File-Name", "meditation.mp4");
-            return restService.post(kinescopeLoadVideoUrl, headers, kinescopeUploadRequest.getUploadVideo(), KinescopeUploadResponse.class);
+            return new VideoStorageUploadResponse(
+                    restService.post(kinescopeLoadVideoUrl, headers, kinescopeUploadRequest.getUploadVideo(), KinescopeUploadResponse.class),
+                    false
+            );
         }
 
         headers.put("X-Video-URL", kinescopeUploadRequest.getSourceLink());
-        return restService.post(kinescopeLoadVideoUrl, headers, KinescopeUploadResponse.class);
+        return new VideoStorageUploadResponse(
+                restService.post(kinescopeLoadVideoUrl, headers, KinescopeUploadResponse.class),
+                true
+        );
     }
     public Mono<KinescopeVideoDataWrapper> get(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();

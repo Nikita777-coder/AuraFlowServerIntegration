@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-class KinescopeData {
+public class KinescopeData {
     private UUID id;
     private String title;
     private String description;

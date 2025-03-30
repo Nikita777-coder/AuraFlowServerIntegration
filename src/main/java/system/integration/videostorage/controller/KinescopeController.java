@@ -5,6 +5,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import reactor.core.publisher.Mono;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
+import system.integration.videostorage.dto.VideoStorageUploadResponse;
 import system.integration.videostorage.service.KinescopeService;
 import system.integration.videostorage.dto.KinescopeUploadResponse;
 import system.integration.videostorage.dto.KinescopeVideoDataWrapper;
@@ -24,7 +25,7 @@ public class KinescopeController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public KinescopeUploadResponse upload(@Valid @RequestBody VideoStorageUploadRequest kinescopeUploadRequest) {
+    public VideoStorageUploadResponse upload(@Valid @RequestBody VideoStorageUploadRequest kinescopeUploadRequest) {
         var ans = kinescopeService.upload(kinescopeUploadRequest);
         return ans;
     }

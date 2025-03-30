@@ -3,17 +3,11 @@ package system.integration.videostorage.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
-import system.integration.videostorage.dto.YandexCloudUploadResponse;
+import system.integration.videostorage.dto.VideoStorageUploadResponse;
 import system.integration.videostorage.service.YandexCloudService;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/integration/video-storage/yandexcloud")
@@ -23,7 +17,7 @@ public class YandexCloudController {
     @PostMapping("/by-url")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public YandexCloudUploadResponse uploadByUrl(@Valid @RequestBody VideoStorageUploadRequest kinescopeUploadRequest) {
+    public VideoStorageUploadResponse uploadByUrl(@Valid @RequestBody VideoStorageUploadRequest kinescopeUploadRequest) {
         var ans = yandexCloudService.upload(kinescopeUploadRequest);
         return ans;
     }
@@ -34,7 +28,7 @@ public class YandexCloudController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public YandexCloudUploadResponse uploadByLocalVideo(@RequestParam String title,
+    public VideoStorageUploadResponse uploadByLocalVideo(@RequestParam String title,
                                      @RequestParam("upload-video") MultipartFile file,
                                      @RequestParam(required = false) String description) {
         var ans = yandexCloudService.upload(
