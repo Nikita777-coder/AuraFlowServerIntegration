@@ -10,16 +10,22 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
+import system.integration.videostorage.dto.YandexCloudUploadResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Service
 @RequiredArgsConstructor
 public class YandexCloudService {
+    private final KinescopeService kinescopeService;
     private final Path root = Paths.get("uploads");
 
     @Value("${service-configs.yandex-cloud.endpoint}")
@@ -33,6 +39,9 @@ public class YandexCloudService {
 
     @Value("${service-configs.yandex-cloud.secret-key}")
     private String SECRET_KEY;
+
+    @Value("${service-configs.yandex-cloud.youtube-cookies}")
+    private String cookiesFilePath;
     private S3Client s3;
 
     @PostConstruct
@@ -44,7 +53,7 @@ public class YandexCloudService {
                 .region(Region.of("ru-central1"))
                 .build();
     }
-    public String upload(VideoStorageUploadRequest videoStorageUploadRequest) {
+    public YandexCloudUploadResponse upload(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (videoStorageUploadRequest.getUploadVideo() == null && videoStorageUploadRequest.getSourceLink() == null) {
             throw new IllegalArgumentException("you must fill meditation from local storage or provide link to it");
         }
@@ -55,44 +64,57 @@ public class YandexCloudService {
 
         return uploadByLink(videoStorageUploadRequest);
     }
-    private String uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
-        File videoFile = new File(videoStorageUploadRequest.getUploadVideo().getOriginalFilename());
+    private YandexCloudUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
+        if (!Files.exists(root)) {
+            try {
+                Files.createDirectories(root); // Создаём директорию, если она не существует
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // Получаем имя файла
+        String fileName = videoStorageUploadRequest.getUploadVideo().getOriginalFilename();
+        Path targetLocation = root.resolve("/upload/" + fileName); // Полный путь к файлу
+
+        // Копируем файл в целевую директорию
+        try {
+            Files.copy(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
+        } catch (FileAlreadyExistsException ex) {
+
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        File videoFile = new File(targetLocation.toString());
         return upload(videoFile);
     }
 
-    private String uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
-        String outputPath = String.format("videos/%s", videoStorageUploadRequest.getTitle());
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    "yt-dlp", "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]", "-o", outputPath, videoStorageUploadRequest.getSourceLink()
-            );
-            processBuilder.directory(new File("."));
-            processBuilder.inheritIO();
+    private YandexCloudUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
+        var b = new YandexCloudUploadResponse();
+        b.setWasUploadFromUrl(true);
+        b.setKinescopeUploadResponse(kinescopeService.upload(videoStorageUploadRequest));
+        b.setLink(String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoStorageUploadRequest.getTitle() + ".mp4"));
 
-            Process process = processBuilder.start();
-            int exitCode = process.waitFor();
-
-            if (exitCode == 0) {
-                return upload(new File(outputPath));
-            } else {
-                throw new RuntimeException("exit code is not equal to 0");
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        throw new RuntimeException("unknown error");
+        return b;
     }
-    private String upload(File videoFile) {
+    private YandexCloudUploadResponse upload(File videoFile) {
         String objectKey = "videos/" + videoFile.getName();
 
-        s3.putObject(
+        var ans = s3.putObject(
                 PutObjectRequest.builder()
                         .bucket(BUCKET_NAME)
                         .key(objectKey)
                         .build(),
                 Paths.get(videoFile.getAbsolutePath())
         );
-        return String.format("%s/%s/%s.mp4", ENDPOINT, BUCKET_NAME, videoFile.getName());
+
+        var b = new YandexCloudUploadResponse();
+        b.setLink(String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoFile.getName()));
+        b.setWasUploadFromUrl(false);
+
+        return b;
+
     }
 }
