@@ -9,10 +9,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import system.integration.videostorage.dto.KinescopeUploadResponse;
-import system.integration.videostorage.dto.KinescopeVideoDataWrapper;
-import system.integration.videostorage.dto.VideoStorageUploadRequest;
-import system.integration.videostorage.dto.VideoStorageUploadResponse;
+import system.integration.videostorage.dto.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,7 +80,7 @@ public class YandexCloudService {
 
         // Получаем имя файла
         String fileName = data.getData().getTitle();
-        Path targetLocation = root.resolve("/upload/" + fileName);
+        Path targetLocation = root.resolve(fileName);
         copyFile(in, targetLocation);
 
         return "success";
@@ -99,7 +96,7 @@ public class YandexCloudService {
 
         // Получаем имя файла
         String fileName = videoStorageUploadRequest.getUploadVideo().getOriginalFilename();
-        Path targetLocation = root.resolve("/upload/" + fileName); // Полный путь к файлу
+        Path targetLocation = root.resolve(fileName); // Полный путь к файлу
 
         try {
             return copyFile(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
@@ -144,8 +141,11 @@ public class YandexCloudService {
                 Paths.get(videoFile.getAbsolutePath())
         );
 
+        var kinescopeUploadRequest = new KinescopeUploadResponse();
+        kinescopeUploadRequest.setData(new KinescopeData());
+
         var b = new VideoStorageUploadResponse(
-                new KinescopeUploadResponse(),
+                kinescopeUploadRequest,
                 false
         );
 
