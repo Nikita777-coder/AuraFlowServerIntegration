@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import system.integration.videostorage.dto.*;
 
@@ -91,6 +92,14 @@ public class YandexCloudService {
 
         return copyFile(in, targetLocation);
     }
+    public void delete(String link) {
+        s3.deleteObject(DeleteObjectRequest
+                .builder()
+                .bucket(BUCKET_NAME)
+                .key(extractObjectKeyFromLink(link))
+                .build()
+        );
+    }
     private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (!Files.exists(root)) {
             try {
@@ -129,7 +138,14 @@ public class YandexCloudService {
 
     private VideoStorageUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
         var b = kinescopeService.upload(videoStorageUploadRequest);
-        b.getUploadResponse().getData().setEmbedLink("");
+
+        if (!videoStorageUploadRequest.getTitle().contains(".mp4")) {
+            throw new IllegalArgumentException("not valid format of saved video");
+        }
+
+        b.getUploadResponse().getData().setEmbedLink(
+                String.format("%s/%s/%s/%s", ENDPOINT, BUCKET_NAME, FOLDER_NAME, videoStorageUploadRequest.getTitle())
+        );
 
         return b;
     }
@@ -157,6 +173,14 @@ public class YandexCloudService {
         );
 
         return b;
+    }
+    private String extractObjectKeyFromLink(String link) {
+        var ob =  link.split(ENDPOINT + '/' + BUCKET_NAME + '/');
 
+        if (ob.length < 2) {
+            throw new IllegalArgumentException("illegal link");
+        }
+
+        return ob[ob.length - 1];
     }
 }

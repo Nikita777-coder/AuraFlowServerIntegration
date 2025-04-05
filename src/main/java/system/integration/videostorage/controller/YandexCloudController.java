@@ -50,6 +50,13 @@ public class YandexCloudController {
         return ans;
     }
 
+    @DeleteMapping
+    @ResponseBody
+    public String deleteVideoByLink(@RequestParam(name = "video-link") String link) {
+        yandexCloudService.delete(link);
+        return "success";
+    }
+
 //    @PostMapping(
 //            name = "/upload",
 //            consumes = "multipart/form-data"
