@@ -33,6 +33,9 @@ public class YandexCloudService {
     @Value("${service-configs.yandex-cloud.bucket-name}")
     private String BUCKET_NAME;
 
+    @Value("${service-configs.yandex-cloud.video-folder}")
+    private String FOLDER_NAME;
+
     @Value("${service-configs.yandex-cloud.access-key}")
     private String ACCESS_KEY;
 
@@ -72,7 +75,7 @@ public class YandexCloudService {
 
         if (!Files.exists(root)) {
             try {
-                Files.createDirectories(root); // Создаём директорию, если она не существует
+                Files.createDirectories(root);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -88,15 +91,14 @@ public class YandexCloudService {
     private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (!Files.exists(root)) {
             try {
-                Files.createDirectories(root); // Создаём директорию, если она не существует
+                Files.createDirectories(root);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        // Получаем имя файла
         String fileName = videoStorageUploadRequest.getUploadVideo().getOriginalFilename();
-        Path targetLocation = root.resolve(fileName); // Полный путь к файлу
+        Path targetLocation = root.resolve(fileName);
 
         try {
             return copyFile(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
@@ -131,7 +133,7 @@ public class YandexCloudService {
         return b;
     }
     private VideoStorageUploadResponse upload(File videoFile) {
-        String objectKey = "videos/" + videoFile.getName();
+        String objectKey = FOLDER_NAME + "/" + videoFile.getName();
 
         var ans = s3.putObject(
                 PutObjectRequest.builder()
@@ -150,7 +152,7 @@ public class YandexCloudService {
         );
 
         b.getUploadResponse().getData().setEmbedLink(
-                String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoFile.getName())
+                String.format("%s/%s/%s/%s", ENDPOINT, BUCKET_NAME, FOLDER_NAME, videoFile.getName())
         );
 
         return b;
