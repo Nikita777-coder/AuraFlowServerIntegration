@@ -9,6 +9,8 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import system.integration.videostorage.dto.*;
 
@@ -21,6 +23,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -64,14 +67,14 @@ public class YandexCloudService {
 
         return uploadByLink(videoStorageUploadRequest);
     }
-    public VideoStorageUploadResponse loadFromKinescope(KinescopeVideoDataWrapper data) {
-        var d = kinescopeService.getWithAdditionalInfo(data.getData().getId());
+    public VideoStorageUploadResponse loadFromKinescope(VideoStorageUploadResponse data) {
+        var d = kinescopeService.getWithAdditionalInfo(data.getUploadResponse().getData().getId());
 
         if (d.getData().getAssets().size() < 2) {
-            throw new IllegalArgumentException("video is not uploaded");
+            throw new IllegalArgumentException("meditation is not uploaded");
         }
 
-        InputStream in = null;
+        InputStream in;
         try {
             in = new URL(d.getData().getAssets().get(1).getDownloadLink()).openStream();
         } catch (IOException e) {
@@ -87,18 +90,37 @@ public class YandexCloudService {
         }
 
         // Получаем имя файла
-        String fileName = data.getData().getTitle();
+        String fileName = data.getUploadResponse().getData().getTitle();
         Path targetLocation = root.resolve(fileName);
 
-        return copyFile(in, targetLocation);
+        copyFileByLink(in, targetLocation);
+        return data;
     }
-    public void delete(String link) {
+    public void delete(String link, UUID id) {
         s3.deleteObject(DeleteObjectRequest
                 .builder()
                 .bucket(BUCKET_NAME)
                 .key(extractObjectKeyFromLink(link))
                 .build()
         );
+
+        if (id != null) {
+            kinescopeService.delete(id);
+        }
+    }
+    public String getTry(String link) {
+        try {
+            s3.getObject(GetObjectRequest
+                    .builder()
+                    .bucket(BUCKET_NAME)
+                    .key(extractObjectKeyFromLink(link))
+                    .build()
+            );
+
+            return "success";
+        } catch (NoSuchKeyException ex) {
+            return "no such meditation";
+        }
     }
     private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (!Files.exists(root)) {
@@ -136,11 +158,28 @@ public class YandexCloudService {
         return upload(videoFile);
     }
 
+    private void copyFileByLink(
+            InputStream in,
+            Path targetLocation
+    ) {
+        try {
+            Files.copy(in, targetLocation);
+        } catch (FileAlreadyExistsException ex) {
+
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        File videoFile = new File(targetLocation.toString());
+        uploadFromLink(videoFile);
+    }
+
     private VideoStorageUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
         var b = kinescopeService.upload(videoStorageUploadRequest);
 
         if (!videoStorageUploadRequest.getTitle().contains(".mp4")) {
-            throw new IllegalArgumentException("not valid format of saved video");
+            throw new IllegalArgumentException("not valid format of title, must contain .mp4 in the end");
         }
 
         b.getUploadResponse().getData().setEmbedLink(
@@ -152,7 +191,7 @@ public class YandexCloudService {
     private VideoStorageUploadResponse upload(File videoFile) {
         String objectKey = FOLDER_NAME + "/" + videoFile.getName();
 
-        var ans = s3.putObject(
+       s3.putObject(
                 PutObjectRequest.builder()
                         .bucket(BUCKET_NAME)
                         .key(objectKey)
@@ -173,6 +212,17 @@ public class YandexCloudService {
         );
 
         return b;
+    }
+    private void uploadFromLink(File videoFile) {
+        String objectKey = FOLDER_NAME + "/" + videoFile.getName();
+
+        s3.putObject(
+                PutObjectRequest.builder()
+                        .bucket(BUCKET_NAME)
+                        .key(objectKey)
+                        .build(),
+                Paths.get(videoFile.getAbsolutePath())
+        );
     }
     private String extractObjectKeyFromLink(String link) {
         var ob =  link.split(ENDPOINT + '/' + BUCKET_NAME + '/');

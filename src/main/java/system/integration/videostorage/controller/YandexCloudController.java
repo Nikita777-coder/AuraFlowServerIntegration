@@ -5,10 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import system.integration.videostorage.dto.KinescopeVideoDataWrapper;
 import system.integration.videostorage.dto.VideoStorageUploadRequest;
 import system.integration.videostorage.dto.VideoStorageUploadResponse;
 import system.integration.videostorage.service.YandexCloudService;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/integration/video-storage/yandexcloud")
@@ -45,40 +46,22 @@ public class YandexCloudController {
 
     @PostMapping("/upload-from-kinescope")
     @ResponseBody
-    public VideoStorageUploadResponse uploadLoadedVideoFromKinescopeToYandex(@RequestBody KinescopeVideoDataWrapper data) {
+    public VideoStorageUploadResponse uploadLoadedVideoFromKinescopeToYandex(@RequestBody VideoStorageUploadResponse data) {
         var ans = yandexCloudService.loadFromKinescope(data);
         return ans;
     }
 
     @DeleteMapping
     @ResponseBody
-    public String deleteVideoByLink(@RequestParam(name = "video-link") String link) {
-        yandexCloudService.delete(link);
+    public String deleteVideoByLink(@RequestParam(name = "video-link") String link,
+                                    @RequestParam(name = "video-id", required = false) UUID id) {
+        yandexCloudService.delete(link, id);
         return "success";
     }
 
-//    @PostMapping(
-//            name = "/upload",
-//            consumes = "multipart/form-data"
-//    )
-//    public ResponseEntity<String> uploadVideo(@RequestParam MultipartFile file) {
-//        try {
-//            // Проверяем, существует ли директория, если нет - создаём её
-//            if (!Files.exists(root)) {
-//                Files.createDirectories(root); // Создаём директорию, если она не существует
-//            }
-//
-//            // Получаем имя файла
-//            String fileName = file.getOriginalFilename();
-//            Path targetLocation = root.resolve(fileName); // Полный путь к файлу
-//
-//            // Копируем файл в целевую директорию
-//            Files.copy(file.getInputStream(), targetLocation);
-//
-//            return ResponseEntity.ok("Video uploaded successfully: " + fileName);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(500).body("Error uploading video: " + e.getMessage());
-//        }
-//    }
+    @GetMapping
+    @ResponseBody
+    public String tryGetVideoByLink(@RequestParam(name = "video-link") String link) {
+        return yandexCloudService.getTry(link);
+    }
 }
