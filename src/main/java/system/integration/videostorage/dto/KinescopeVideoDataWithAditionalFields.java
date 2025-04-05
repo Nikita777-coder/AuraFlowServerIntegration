@@ -26,5 +26,5 @@ public class KinescopeVideoDataWithAditionalFields {
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
-    private List<KinescopeAsset> kinescopeAssets;
+    private List<KinescopeAsset> assets;
 }

@@ -58,13 +58,13 @@ public class KinescopeService {
                 headers,
                 KinescopeVideoDataWrapper.class);
     }
-    public KinescopeVideoDataWithAditionalFields getWithAdditionalInfo(UUID videoId) {
+    public KinescopeGetResponse getWithAdditionalInfo(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();
 
         return restService.getWithoutMono(
                 getUriWithVideoIdAsPathVariable(kinescopeV1VideoUrl, videoId),
                 headers,
-                KinescopeVideoDataWithAditionalFields.class);
+                KinescopeGetResponse.class);
     }
     public void delete(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();

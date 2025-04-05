@@ -63,12 +63,16 @@ public class YandexCloudService {
 
         return uploadByLink(videoStorageUploadRequest);
     }
-    public String loadFromKinescope(KinescopeVideoDataWrapper data) {
+    public VideoStorageUploadResponse loadFromKinescope(KinescopeVideoDataWrapper data) {
         var d = kinescopeService.getWithAdditionalInfo(data.getData().getId());
+
+        if (d.getData().getAssets().size() < 2) {
+            throw new IllegalArgumentException("video is not uploaded");
+        }
 
         InputStream in = null;
         try {
-            in = new URL(d.getKinescopeAssets().get(1).getDownloadLink()).openStream();
+            in = new URL(d.getData().getAssets().get(1).getDownloadLink()).openStream();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -84,9 +88,8 @@ public class YandexCloudService {
         // Получаем имя файла
         String fileName = data.getData().getTitle();
         Path targetLocation = root.resolve(fileName);
-        copyFile(in, targetLocation);
 
-        return "success";
+        return copyFile(in, targetLocation);
     }
     private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (!Files.exists(root)) {
@@ -126,9 +129,7 @@ public class YandexCloudService {
 
     private VideoStorageUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
         var b = kinescopeService.upload(videoStorageUploadRequest);
-        b.getUploadResponse().getData().setEmbedLink(
-                String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, videoStorageUploadRequest.getTitle() + ".mp4")
-        );
+        b.getUploadResponse().getData().setEmbedLink("");
 
         return b;
     }

@@ -45,7 +45,7 @@ public class YandexCloudController {
 
     @PostMapping("/upload-from-kinescope")
     @ResponseBody
-    public String uploadLoadedVideoFromKinescopeToYandex(@RequestBody KinescopeVideoDataWrapper data) {
+    public VideoStorageUploadResponse uploadLoadedVideoFromKinescopeToYandex(@RequestBody KinescopeVideoDataWrapper data) {
         var ans = yandexCloudService.loadFromKinescope(data);
         return ans;
     }
