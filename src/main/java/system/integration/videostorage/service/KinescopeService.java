@@ -1,10 +1,8 @@
-package system.integration.kinescope.service;
+package system.integration.videostorage.service;
 
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
-import system.integration.kinescope.dto.KinescopeUploadRequest;
-import system.integration.kinescope.dto.KinescopeUploadResponse;
-import system.integration.kinescope.dto.KinescopeVideoDataWrapper;
+import system.integration.videostorage.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,7 +27,7 @@ public class KinescopeService {
 
     @Value("${service-configs.kinescope.project-id}")
     private String kinescopeProjectId;
-    public KinescopeUploadResponse upload(KinescopeUploadRequest kinescopeUploadRequest) {
+    public VideoStorageUploadResponse upload(VideoStorageUploadRequest kinescopeUploadRequest) {
         if (kinescopeUploadRequest.getUploadVideo() == null && kinescopeUploadRequest.getSourceLink() == null) {
             throw new IllegalArgumentException("you must fill meditation from local storage or provide link to it");
         }
@@ -40,11 +38,17 @@ public class KinescopeService {
 
         if (kinescopeUploadRequest.getUploadVideo() != null) {
             headers.put("X-File-Name", "meditation.mp4");
-            return restService.post(kinescopeLoadVideoUrl, headers, kinescopeUploadRequest.getUploadVideo(), KinescopeUploadResponse.class);
+            return new VideoStorageUploadResponse(
+                    restService.post(kinescopeLoadVideoUrl, headers, kinescopeUploadRequest.getUploadVideo(), KinescopeUploadResponse.class),
+                    false
+            );
         }
 
         headers.put("X-Video-URL", kinescopeUploadRequest.getSourceLink());
-        return restService.post(kinescopeLoadVideoUrl, headers, KinescopeUploadResponse.class);
+        return new VideoStorageUploadResponse(
+                restService.post(kinescopeLoadVideoUrl, headers, KinescopeUploadResponse.class),
+                true
+        );
     }
     public Mono<KinescopeVideoDataWrapper> get(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();
@@ -53,6 +57,14 @@ public class KinescopeService {
                 getUriWithVideoIdAsPathVariable(kinescopeV1VideoUrl, videoId),
                 headers,
                 KinescopeVideoDataWrapper.class);
+    }
+    public KinescopeGetResponse getWithAdditionalInfo(UUID videoId) {
+        Map<String, String> headers = getDefaultHeaders();
+
+        return restService.getWithoutMono(
+                getUriWithVideoIdAsPathVariable(kinescopeV1VideoUrl, videoId),
+                headers,
+                KinescopeGetResponse.class);
     }
     public void delete(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();
