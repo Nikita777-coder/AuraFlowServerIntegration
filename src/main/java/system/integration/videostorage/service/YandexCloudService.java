@@ -119,7 +119,7 @@ public class YandexCloudService {
 
             return "success";
         } catch (NoSuchKeyException ex) {
-            return "no such meditation";
+            throw new IllegalArgumentException("no such meditation");
         }
     }
     private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {

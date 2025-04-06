@@ -53,10 +53,9 @@ public class YandexCloudController {
 
     @DeleteMapping
     @ResponseBody
-    public String deleteVideoByLink(@RequestParam(name = "video-link") String link,
+    public void deleteVideoByLink(@RequestParam(name = "video-link") String link,
                                     @RequestParam(name = "video-id", required = false) UUID id) {
         yandexCloudService.delete(link, id);
-        return "success";
     }
 
     @GetMapping
