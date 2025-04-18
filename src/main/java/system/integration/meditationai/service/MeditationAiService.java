@@ -23,7 +23,8 @@ public class MeditationAiService {
     public GeneratedMeditation generateMeditation(MeditationGenerationRequest meditationGenerationRequest) {
         Map<String, String> headers = Map.of("Authorization", String.format("Bearer %s", token));
         return restService.post(
-                String.format("%s/%s", baseUrl, generatePath),
+                baseUrl,
+                generatePath,
                 headers,
                 meditationGenerationRequest,
                 GeneratedMeditation.class
