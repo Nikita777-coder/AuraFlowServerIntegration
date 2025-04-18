@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("integration/remind-service")
+@RequestMapping("/remind-service")
 @RequiredArgsConstructor
 public class OneSignalController {
     @PostMapping

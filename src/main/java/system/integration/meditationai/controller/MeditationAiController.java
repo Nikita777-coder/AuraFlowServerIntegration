@@ -9,7 +9,7 @@ import system.integration.meditationai.dto.MeditationGenerationRequest;
 import system.integration.meditationai.service.MeditationAiService;
 
 @RestController
-@RequestMapping("/integration/meditation-ai")
+@RequestMapping("/meditation-ai")
 @RequiredArgsConstructor
 public class MeditationAiController {
     private final MeditationAiService meditationAiService;
