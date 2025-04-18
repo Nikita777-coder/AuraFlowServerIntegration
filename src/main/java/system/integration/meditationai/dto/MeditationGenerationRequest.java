@@ -23,5 +23,6 @@ public class MeditationGenerationRequest {
     private String topic;
 
     @NotBlank
+    @JsonProperty("melody")
     private String melodyDescription;
 }
