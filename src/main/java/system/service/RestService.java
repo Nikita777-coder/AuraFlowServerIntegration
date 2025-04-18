@@ -1,4 +1,4 @@
-package system.integration.videostorage.service;
+package system.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
