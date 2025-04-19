@@ -2,6 +2,7 @@ package system.integration.videostorage.service;
 
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
+import system.service.RestService;
 import system.integration.videostorage.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

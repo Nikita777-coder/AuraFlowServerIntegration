@@ -12,7 +12,7 @@ import system.integration.videostorage.service.YandexCloudService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/integration/video-storage/yandexcloud")
+@RequestMapping("/video-storage/yandexcloud")
 @RequiredArgsConstructor
 public class YandexCloudController {
     private final YandexCloudService yandexCloudService;

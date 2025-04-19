@@ -22,6 +22,10 @@ service-configs:
     access-key: ${YANDEX_CLOUD_ACCESS_KEY}
     secret-key: ${YANDEX_CLOUD_SECRET_KEY}
     video-folder: ${YANDEX_CLOUD_VIDEO_FOLDER}
+  meditation-generator-service:
+    auth-jwt-secret: ${MEDITATION_GENERATOR_SERVICE_SECRET}
+    base-url: ${MEDITATION_GENERATOR_SERVICE_BASE_URL}
+    generate-path: ${MEDITATION_GENERATOR_SERVICE_GENERATE_PATH}
 
 logging:
   level:

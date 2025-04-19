@@ -9,7 +9,7 @@ import system.integration.yookassa.service.YookassaService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/integration/payment")
+@RequestMapping("/payment")
 @RequiredArgsConstructor
 public class YookassaController {
     private final YookassaService yookassaService;
