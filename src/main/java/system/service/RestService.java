@@ -71,6 +71,25 @@ public class RestService {
                 .retrieve()
                 .bodyToMono(tClass);
     }
+    public <T> T get(String baseUrl,
+                           String path,
+                           UUID pathVariable,
+                           Map<String, String> headers,
+                           Class<T> tClass) {
+        return webClient
+                .mutate()
+                .baseUrl(baseUrl)
+                .build()
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(path)
+                        .build(pathVariable)
+                )
+                .headers(headers1 -> headers1.setAll(headers))
+                .retrieve()
+                .bodyToMono(tClass)
+                .block();
+    }
     public <T> T getWithoutMono(String url,
                            Map<String, String> headers,
                            Class<T> tClass) {
