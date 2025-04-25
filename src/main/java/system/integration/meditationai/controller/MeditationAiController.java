@@ -21,6 +21,8 @@ public class MeditationAiController {
     public UUID generateMeditation(@Valid @RequestBody MeditationGenerationRequest meditationGenerationRequest) {
         return meditationAiService.generateMeditation(meditationGenerationRequest);
     }
+    @GetMapping
+    @ResponseBody
     public MeditationStatus getMeditationStatus(@RequestParam UUID id) {
         return meditationAiService.getMeditationStatus(id);
     }
