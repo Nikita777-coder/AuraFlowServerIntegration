@@ -21,6 +21,7 @@ public class MeditationAiService {
     private String baseUrl;
     @Value("${service-configs.meditation-generator-service.generate-path}")
     private String generatePath;
+    @Value("${service-configs.meditation-generator-service.status-path}")
     private String statusUrl;
     public UUID generateMeditation(MeditationGenerationRequest meditationGenerationRequest) {
         Map<String, String> headers = Map.of("Authorization", String.format("Bearer %s", token));
