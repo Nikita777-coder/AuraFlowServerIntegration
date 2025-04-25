@@ -26,6 +26,7 @@ service-configs:
     auth-jwt-secret: ${MEDITATION_GENERATOR_SERVICE_SECRET}
     base-url: ${MEDITATION_GENERATOR_SERVICE_BASE_URL}
     generate-path: ${MEDITATION_GENERATOR_SERVICE_GENERATE_PATH}
+    status-path: ${MEDITATION_GENERATOR_SERVICE_STATUS_PATH}
 
 logging:
   level:
