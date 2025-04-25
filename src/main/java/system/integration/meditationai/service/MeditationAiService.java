@@ -23,17 +23,17 @@ public class MeditationAiService {
     private String generatePath;
     @Value("${service-configs.meditation-generator-service.status-path}")
     private String statusUrl;
-    public UUID generateMeditation(MeditationGenerationRequest meditationGenerationRequest) {
+    public String generateMeditation(MeditationGenerationRequest meditationGenerationRequest) {
         Map<String, String> headers = Map.of("Authorization", String.format("Bearer %s", token));
         return restService.post(
                 baseUrl,
                 generatePath,
                 headers,
                 meditationGenerationRequest,
-                UUID.class
+                String.class
         );
     }
-    public MeditationStatus getMeditationStatus(UUID id) {
+    public MeditationStatus getMeditationStatus(String id) {
         Map<String, String> headers = Map.of("Authorization", String.format("Bearer %s", token));
         return restService.get(
              baseUrl,

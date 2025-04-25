@@ -73,7 +73,7 @@ public class RestService {
     }
     public <T> T get(String baseUrl,
                            String path,
-                           UUID pathVariable,
+                           String pathVariable,
                            Map<String, String> headers,
                            Class<T> tClass) {
         return webClient

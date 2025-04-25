@@ -18,12 +18,13 @@ public class MeditationAiController {
     @PostMapping
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
-    public UUID generateMeditation(@Valid @RequestBody MeditationGenerationRequest meditationGenerationRequest) {
+    public String generateMeditation(@Valid @RequestBody MeditationGenerationRequest meditationGenerationRequest) {
         return meditationAiService.generateMeditation(meditationGenerationRequest);
     }
     @GetMapping
     @ResponseBody
-    public MeditationStatus getMeditationStatus(@RequestParam UUID id) {
-        return meditationAiService.getMeditationStatus(id);
+    public MeditationStatus getMeditationStatus(@RequestParam String id) {
+        var ans = meditationAiService.getMeditationStatus(id);
+        return ans;
     }
 }
