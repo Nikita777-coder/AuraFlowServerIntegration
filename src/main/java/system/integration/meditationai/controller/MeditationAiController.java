@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import system.integration.meditationai.dto.GeneratedMeditation;
+import system.integration.meditationai.dto.MeditationStatus;
 import system.integration.meditationai.dto.MeditationGenerationRequest;
 import system.integration.meditationai.service.MeditationAiService;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/meditation-ai")
@@ -16,7 +18,13 @@ public class MeditationAiController {
     @PostMapping
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
-    public GeneratedMeditation generateMeditation(@Valid @RequestBody MeditationGenerationRequest meditationGenerationRequest) {
+    public String generateMeditation(@Valid @RequestBody MeditationGenerationRequest meditationGenerationRequest) {
         return meditationAiService.generateMeditation(meditationGenerationRequest);
+    }
+    @GetMapping
+    @ResponseBody
+    public MeditationStatus getMeditationStatus(@RequestParam String id) {
+        var ans = meditationAiService.getMeditationStatus(id);
+        return ans;
     }
 }
