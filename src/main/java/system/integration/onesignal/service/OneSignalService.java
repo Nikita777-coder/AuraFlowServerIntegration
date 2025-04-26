@@ -7,6 +7,7 @@ import system.integration.onesignal.dto.Contents;
 import system.integration.onesignal.dto.OneSignalRequest;
 import system.service.RestService;
 
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -22,10 +23,12 @@ public class OneSignalService {
     private String appId;
     public void sendMessage(String message) {
         Map<String, String> headers = Map.of(
-                "Authorization", String.format("Key %s", apiKey)
+                "Authorization", String.format("Key %s", apiKey),
+                "Content-Type", "application/json",
+                "Accept", "application/json"
         );
 
-        OneSignalRequest b = new OneSignalRequest(appId, new Contents(message));
-        restService.post(oneSignalUrl, headers, b, void.class);
+        OneSignalRequest b = new OneSignalRequest(appId, new Contents(message), List.of("Active Subscriptions"));
+        restService.post(oneSignalUrl, headers, b, String.class);
     }
 }
