@@ -14,6 +14,6 @@ public class OneSignalRequest {
 
     private Contents contents;
 
-    @JsonProperty("included_segments")
-    private List<String> includedSegments;
+    @JsonProperty("include_player_ids")
+    private List<String> includedPlayers;
 }
