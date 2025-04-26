@@ -1,5 +1,6 @@
 package system.integration.onesignal.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import system.integration.onesignal.dto.OneSignalRequest;
@@ -12,7 +13,7 @@ import system.integration.onesignal.service.OneSignalService;
 public class OneSignalController {
     private final OneSignalService oneSignalService;
     @PostMapping
-    public void sendMessage(OneSignalRequestFromController oneSignalRequestFromController) {
+    public void sendMessage(@Valid @RequestBody OneSignalRequestFromController oneSignalRequestFromController) {
         oneSignalService.sendMessage(oneSignalRequestFromController);
     }
 }
