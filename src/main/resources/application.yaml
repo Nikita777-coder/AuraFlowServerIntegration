@@ -27,6 +27,10 @@ service-configs:
     base-url: ${MEDITATION_GENERATOR_SERVICE_BASE_URL}
     generate-path: ${MEDITATION_GENERATOR_SERVICE_GENERATE_PATH}
     status-path: ${MEDITATION_GENERATOR_SERVICE_STATUS_PATH}
+  one-signal:
+    url: ${ONE_SIGNAL_URL}
+    api-key: ${ONE_SIGNAL_API_KEY}
+    app-id: ${ONE_SIGNAL_APP_ID}
 
 logging:
   level:
