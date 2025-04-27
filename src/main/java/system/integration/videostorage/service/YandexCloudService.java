@@ -94,6 +94,9 @@ public class YandexCloudService {
         Path targetLocation = root.resolve(fileName);
 
         copyFileByLink(in, targetLocation);
+
+        kinescopeService.delete(data.getUploadResponse().getData().getId());
+
         return data;
     }
     public void delete(String link, UUID id) {
