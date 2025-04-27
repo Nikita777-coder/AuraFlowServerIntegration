@@ -23,13 +23,23 @@ public class OneSignalService {
     @Value("${service-configs.one-signal.app-id}")
     private String appId;
     public void sendMessage(OneSignalRequestFromController message) {
+        if (message.getTo() == null && message.getListTo() == null) {
+            throw new IllegalArgumentException("user or users to send message must be specified");
+        }
+
+        OneSignalRequest b;
+        if (message.getTo() == null) {
+            b = new OneSignalRequest(appId, new Contents(message.getMessage()), List.of(message.getTo()));
+        } else {
+            b = new OneSignalRequest(appId, new Contents(message.getMessage()), message.getListTo());
+        }
+
         Map<String, String> headers = Map.of(
                 "Authorization", String.format("Key %s", apiKey),
                 "Content-Type", "application/json",
                 "Accept", "application/json"
         );
 
-        OneSignalRequest b = new OneSignalRequest(appId, new Contents(message.getMessage()), List.of(message.getTo()));
         System.out.println(restService.post(oneSignalUrl, headers, b, String.class));
     }
 }
