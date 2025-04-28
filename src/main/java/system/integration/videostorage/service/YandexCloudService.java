@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -23,6 +24,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.UUID;
 
 @Service
@@ -112,17 +114,17 @@ public class YandexCloudService {
         }
     }
     public String getTry(String link) {
-        try {
-            s3.getObject(GetObjectRequest
-                    .builder()
-                    .bucket(BUCKET_NAME)
-                    .key(extractObjectKeyFromLink(link))
-                    .build()
-            );
-
+        try (var responseInputStream = s3.getObject(
+                GetObjectRequest.builder()
+                        .bucket(BUCKET_NAME)
+                        .key(extractObjectKeyFromLink(link))
+                        .build()
+        )) {
             return "success";
         } catch (NoSuchKeyException ex) {
             throw new IllegalArgumentException("no such meditation");
+        } catch (IOException ioEx) {
+            throw new RuntimeException("error reading object", ioEx);
         }
     }
     private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
