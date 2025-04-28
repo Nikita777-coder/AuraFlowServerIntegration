@@ -20,6 +20,13 @@ public class RestService {
                 .headers(httpHeaders -> httpHeaders.setAll(headers))
                 .bodyValue(body)
                 .retrieve()
+                .onStatus(status -> status.is4xxClientError(), clientResponse -> {
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseBody -> {
+                                System.out.println("Error Response Body: " + responseBody);
+                                return Mono.error(new IllegalArgumentException());
+                            });
+                })
                 .bodyToMono(tClass);
 
         return ans.block();
@@ -87,6 +94,20 @@ public class RestService {
                 )
                 .headers(headers1 -> headers1.setAll(headers))
                 .retrieve()
+                .onStatus(status -> status.is4xxClientError(), clientResponse -> {
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseBody -> {
+                                System.out.println("Error Response Body: " + responseBody);
+                                return Mono.error(new IllegalArgumentException());
+                            });
+                })
+                .onStatus(status -> status.is5xxServerError(), clientResponse -> {
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseBody -> {
+                                System.out.println("Error Response Body: " + responseBody);
+                                return Mono.error(new IllegalArgumentException());
+                            });
+                })
                 .bodyToMono(tClass)
                 .block();
     }
