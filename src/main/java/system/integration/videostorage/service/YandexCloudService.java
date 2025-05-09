@@ -92,6 +92,10 @@ public class YandexCloudService {
 
         // Получаем имя файла
         String fileName = data.getUploadResponse().getData().getTitle();
+        if (!fileName.contains(".mp4")) {
+            fileName += ".mp4";
+        }
+
         Path targetLocation = root.resolve(fileName);
 
         copyFileByLink(in, targetLocation);
@@ -139,7 +143,14 @@ public class YandexCloudService {
         Path targetLocation = root.resolve(fileName);
 
         try {
-            return copyFile(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
+            var ans = copyFile(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
+            ans.getUploadResponse().getData().setTitle(videoStorageUploadRequest.getTitle());
+
+            if (videoStorageUploadRequest.getDescription() != null) {
+                ans.getUploadResponse().getData().setDescription(videoStorageUploadRequest.getDescription());
+            }
+
+            return ans;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -182,13 +193,15 @@ public class YandexCloudService {
     private VideoStorageUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
         var b = kinescopeService.upload(videoStorageUploadRequest);
 
-        if (!videoStorageUploadRequest.getTitle().contains(".mp4")) {
-            throw new IllegalArgumentException("not valid format of title, must contain .mp4 in the end");
+        String fileName = videoStorageUploadRequest.getTitle();
+        if (!fileName.contains(".mp4")) {
+            fileName += ".mp4";
         }
 
         b.getUploadResponse().getData().setEmbedLink(
-                String.format("%s/%s/%s/%s", ENDPOINT, BUCKET_NAME, FOLDER_NAME, videoStorageUploadRequest.getTitle())
+                String.format("%s/%s/%s/%s", ENDPOINT, BUCKET_NAME, FOLDER_NAME, fileName)
         );
+        b.getUploadResponse().getData().setTitle(videoStorageUploadRequest.getTitle());
 
         return b;
     }
