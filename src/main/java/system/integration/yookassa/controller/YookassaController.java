@@ -17,8 +17,4 @@ public class YookassaController {
     public PaymentData makePayment() {
         return yookassaService.makePayment();
     }
-    @GetMapping("/status")
-    public TransactionStatus getTransactionStatus(@RequestParam("payment-id") UUID id) {
-        throw new RuntimeException();
-    }
 }
