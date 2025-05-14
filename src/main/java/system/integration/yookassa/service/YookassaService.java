@@ -3,8 +3,7 @@ package system.integration.yookassa.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import system.integration.yookassa.dto.PaymentData;
-import system.integration.yookassa.dto.PaymentRequest;
+import system.integration.yookassa.dto.*;
 import system.service.RestService;
 
 import java.math.BigDecimal;
@@ -36,11 +35,17 @@ public class YookassaService {
         headers.put("Idempotence-Key", UUID.randomUUID().toString());
 
         PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setAmount(BigDecimal.valueOf(amount));
-        paymentRequest.setCurrency(currency);
+        paymentRequest.setAmount(new Amount(
+                BigDecimal.valueOf(amount),
+                currency
+        ));
         paymentRequest.setCapture(true);
-        paymentRequest.setMethodType(methodType);
+        paymentRequest.setMethodType(new MethodType(methodType));
         paymentRequest.setDescription(description);
+
+        Confirmation confirmation = new Confirmation();
+        confirmation.setType("embedded");
+        paymentRequest.setConfirmation(confirmation);
 
         return restService.postWithDefaultHeaders(
                 yookassaBaseUrl,

@@ -4,20 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 public class PaymentRequest {
-    @JsonProperty("amount.value")
-    private BigDecimal amount;
+    private Amount amount;
 
-    @JsonProperty("amount.currency")
-    private String currency;
-
-    @JsonProperty("payment_method_data.type")
-    private String methodType;
+    @JsonProperty("payment_method_data")
+    private MethodType methodType;
 
     private boolean capture;
     private String description;
+    private Confirmation confirmation;
 }

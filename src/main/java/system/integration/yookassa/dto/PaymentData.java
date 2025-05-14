@@ -11,8 +11,8 @@ import java.util.UUID;
 public class PaymentData {
     private UUID id;
 
-    @JsonProperty("confirmation.confirmation_url")
-    private String paymentUrl;
+    @JsonProperty("confirmation")
+    private Confirmation confirmation;
 
     private boolean test;
 }
