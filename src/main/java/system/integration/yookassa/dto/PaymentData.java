@@ -1,5 +1,6 @@
 package system.integration.yookassa.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,10 @@ import java.util.UUID;
 @Getter
 @Setter
 public class PaymentData {
-    private UUID paymentId;
+    private UUID id;
+
+    @JsonProperty("confirmation.confirmation_url")
     private String sbpPaymentUrl;
+
+    private boolean test;
 }

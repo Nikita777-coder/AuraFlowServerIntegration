@@ -31,6 +31,14 @@ service-configs:
     url: ${ONE_SIGNAL_URL}
     api-key: ${ONE_SIGNAL_API_KEY}
     app-id: ${ONE_SIGNAL_APP_ID}
+  yookassa:
+    base-url: ${YOOKASSA_BASE_URL}
+    test-api-key: ${YOOKASSA_TEST_API_KEY}
+    shop-id: ${YOOKASSA_SHOP_ID}
+    description: ${YOOKASSA_PAYMENT_DESCRIPTION}
+    method-type: ${YOOKASSA_PAYMENT_METHOD}
+    currency: ${YOOKASSA_PAYMENT_CURRENCY}
+    amount: ${YOOKASSA_PAYMENT_AMOUNT}
 
 logging:
   level:
