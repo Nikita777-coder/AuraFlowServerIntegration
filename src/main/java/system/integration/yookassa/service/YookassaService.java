@@ -1,5 +1,7 @@
 package system.integration.yookassa.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,15 @@ public class YookassaService {
         Confirmation confirmation = new Confirmation();
         confirmation.setType("embedded");
         paymentRequest.setConfirmation(confirmation);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String json = null;
+        try {
+            json = mapper.writeValueAsString(paymentRequest);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(json);
 
         return restService.postWithDefaultHeaders(
                 yookassaBaseUrl,
