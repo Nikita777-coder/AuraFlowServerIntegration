@@ -12,7 +12,7 @@ public class PaymentData {
     private UUID id;
 
     @JsonProperty("confirmation.confirmation_url")
-    private String sbpPaymentUrl;
+    private String paymentUrl;
 
     private boolean test;
 }
