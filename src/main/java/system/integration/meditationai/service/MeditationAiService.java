@@ -1,8 +1,10 @@
 package system.integration.meditationai.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import system.integration.meditationai.dto.MeditationGenerationRequest;
 import system.integration.meditationai.dto.MeditationStatus;
 import system.service.RestService;
@@ -13,8 +15,12 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class MeditationAiService {
-    private final RestService restService;
-
+    private final WebClient zitadelWebClient;
+    private RestService restService;
+    @PostConstruct
+    private void initRest() {
+        restService = new RestService(zitadelWebClient);
+    }
     @Value("${service-configs.meditation-generator-service.auth-jwt-secret}")
     private String token;
     @Value("${service-configs.meditation-generator-service.base-url}")
