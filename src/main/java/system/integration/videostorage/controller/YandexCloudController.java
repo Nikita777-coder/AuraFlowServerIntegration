@@ -19,7 +19,7 @@ public class YandexCloudController {
     @PostMapping("/by-url")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public VideoStorageUploadResponse uploadByUrl(@Valid @RequestBody VideoStorageUploadRequest kinescopeUploadRequest) {
+    public UUID uploadByUrl(@Valid @RequestBody VideoStorageUploadRequest kinescopeUploadRequest) {
         var ans = yandexCloudService.upload(kinescopeUploadRequest);
         return ans;
     }
@@ -30,7 +30,7 @@ public class YandexCloudController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public VideoStorageUploadResponse uploadByLocalVideo(@RequestParam String title,
+    public UUID uploadByLocalVideo(@RequestParam String title,
                                      @RequestParam("upload-video") MultipartFile file,
                                      @RequestParam(required = false) String description) {
         var ans = yandexCloudService.upload(
@@ -44,11 +44,10 @@ public class YandexCloudController {
         return ans;
     }
 
-    @PostMapping("/upload-from-kinescope")
+    @GetMapping("/get-data-info")
     @ResponseBody
-    public VideoStorageUploadResponse uploadLoadedVideoFromKinescopeToYandex(@RequestBody VideoStorageUploadResponse data) {
-        var ans = yandexCloudService.loadFromKinescope(data);
-        return ans;
+    public VideoStorageUploadResponse getData(@RequestParam UUID taskId) {
+        return yandexCloudService.getData(taskId);
     }
 
     @DeleteMapping
