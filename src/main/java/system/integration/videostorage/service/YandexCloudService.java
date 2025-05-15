@@ -127,17 +127,13 @@ public class YandexCloudService {
 
         kinescopeService.delete(data.getUploadResponse().getData().getId());
     }
-    public void delete(String link, UUID id) {
+    public void delete(String link) {
         s3.deleteObject(DeleteObjectRequest
                 .builder()
                 .bucket(BUCKET_NAME)
                 .key(extractObjectKeyFromLink(link))
                 .build()
         );
-
-        if (id != null) {
-            kinescopeService.delete(id);
-        }
     }
     public String getTry(String link) {
         try (var responseInputStream = s3.getObject(
