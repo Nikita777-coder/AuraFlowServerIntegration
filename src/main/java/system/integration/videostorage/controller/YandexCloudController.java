@@ -9,6 +9,8 @@ import system.integration.videostorage.dto.VideoStorageUploadRequest;
 import system.integration.videostorage.dto.VideoStorageUploadResponse;
 import system.integration.videostorage.service.YandexCloudService;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -59,6 +61,13 @@ public class YandexCloudController {
     @GetMapping
     @ResponseBody
     public String tryGetVideoByLink(@RequestParam(name = "video-link") String link) {
-        return yandexCloudService.getTry(link);
+        var ans = yandexCloudService.getTry(link);
+        return ans;
+    }
+
+    @GetMapping("/all")
+    @ResponseBody
+    public List<String> getAllPlatformVideos()  {
+        return yandexCloudService.getAllLinksPlatformVideos();
     }
 }

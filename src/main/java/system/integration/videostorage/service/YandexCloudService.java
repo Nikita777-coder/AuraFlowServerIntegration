@@ -8,10 +8,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import system.integration.videostorage.dto.*;
 
 import java.io.File;
@@ -24,9 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -135,6 +130,37 @@ public class YandexCloudService {
                 .build()
         );
     }
+    public List<String> getAllLinksPlatformVideos() {
+        ListObjectsV2Request listReq = ListObjectsV2Request.builder()
+                .bucket(BUCKET_NAME)
+                .prefix(FOLDER_NAME)
+                .build();
+
+        ListObjectsV2Response listRes;
+
+        String continuationToken = null;
+        List<String> links = new ArrayList<>();
+
+        do {
+            ListObjectsV2Request.Builder reqBuilder = listReq.toBuilder();
+            if (continuationToken != null) {
+                reqBuilder.continuationToken(continuationToken);
+            }
+            listRes = s3.listObjectsV2(reqBuilder.build());
+
+            for (S3Object obj : listRes.contents()) {
+                String key = obj.key();
+
+                if (key.endsWith(".mp4")) {
+                    links.add(String.format("%s/%s/%s", ENDPOINT, BUCKET_NAME, key));
+                }
+            }
+
+            continuationToken = listRes.nextContinuationToken();
+        } while (listRes.isTruncated());
+
+        return links;
+    }
     public String getTry(String link) {
         try (var responseInputStream = s3.getObject(
                 GetObjectRequest.builder()
@@ -147,6 +173,8 @@ public class YandexCloudService {
             throw new IllegalArgumentException("no such meditation");
         } catch (IOException ioEx) {
             throw new RuntimeException("error reading object", ioEx);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
     private void uploadVideo(UUID taskId, VideoStorageUploadRequest videoStorageUploadRequest) {
