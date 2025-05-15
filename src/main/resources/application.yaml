@@ -1,0 +1,53 @@
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: ${MULTIPART_FILE_SIZE_THRESHOLD}
+      max-file-size: ${MULTIPART_MAX_FILE_SIZE}
+      max-request-size: ${MULTIPART_MAX_REQUEST_SIZE}
+service-configs:
+  zitadel:
+    issuer-uri: ${ZITADEL_ISSUER_URI}
+    jwt-set-uri: ${service-configs.zitadel.issuer-uri}/.well-known/openid-configuration/jwks
+    id: ${REGISTRATION_ID}
+    client-id: ${ZITADEL_CLIENT_ID}
+    client-secret: ${ZITADEL_CLIENT_SECRET}
+    scope: ${ZITADEL_SCOPE}
+    token-uri: ${service-configs.zitadel.issuer-uri}/oauth/v2/token
+  web-client:
+    time-response: ${TIME_RESPONSE}
+  kinescope:
+    load-video-url: ${VIDEO_STORAGE_LOAD_URL}
+    v1-video-url: ${VIDEO_STORAGE_V1_URL}
+    token: ${VIDEO_STORAGE_TOKEN}
+    project-id: ${VIDEO_STORAGE_PROJECT_ID}
+  yandex-cloud:
+    endpoint: ${YANDEX_CLOUD_ENDPOINT}
+    bucket-name: ${YANDEX_CLOUD_BUCKET_NAME}
+    access-key: ${YANDEX_CLOUD_ACCESS_KEY}
+    secret-key: ${YANDEX_CLOUD_SECRET_KEY}
+    video-folder: ${YANDEX_CLOUD_VIDEO_FOLDER}
+  meditation-generator-service:
+    auth-jwt-secret: ${MEDITATION_GENERATOR_SERVICE_SECRET}
+    base-url: ${MEDITATION_GENERATOR_SERVICE_BASE_URL}
+    generate-path: ${MEDITATION_GENERATOR_SERVICE_GENERATE_PATH}
+    status-path: ${MEDITATION_GENERATOR_SERVICE_STATUS_PATH}
+  one-signal:
+    url: ${ONE_SIGNAL_URL}
+    api-key: ${ONE_SIGNAL_API_KEY}
+    app-id: ${ONE_SIGNAL_APP_ID}
+  yookassa:
+    base-url: ${YOOKASSA_BASE_URL}
+    test-api-key: ${YOOKASSA_TEST_API_KEY}
+    shop-id: ${YOOKASSA_SHOP_ID}
+    description: ${YOOKASSA_PAYMENT_DESCRIPTION}
+    #    method-type: ${YOOKASSA_PAYMENT_METHOD}
+    currency: ${YOOKASSA_PAYMENT_CURRENCY}
+    amount: ${YOOKASSA_PAYMENT_AMOUNT}
+logging:
+  level:
+    org.springframework.security.oauth2: DEBUG
+server:
+  port: ${PORT}
+  integration:
+    fixed-rate-time: ${FIXED_RATE_TIME}
