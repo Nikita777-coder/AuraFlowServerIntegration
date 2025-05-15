@@ -130,6 +130,39 @@ public class RestService {
                 .bodyToMono(tClass)
                 .block();
     }
+
+    public <T> Mono<T> get(String baseUrl,
+                     String uri,
+                     Map<String, String> params,
+                     Map<String, String> headers,
+                     Class<T> tClass) {
+        return webClient
+                .mutate()
+                .baseUrl(baseUrl)
+                .build()
+                .get()
+                .uri(uriBuilder -> {
+                    params.forEach(uriBuilder::queryParam);
+                    return uriBuilder.path(uri).build();
+                })
+                .headers(headers1 -> headers1.setAll(headers))
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError(), clientResponse -> {
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseBody -> {
+                                System.out.println("Error Response Body: " + responseBody);
+                                return Mono.error(new IllegalArgumentException());
+                            });
+                })
+                .onStatus(status -> status.is5xxServerError(), clientResponse -> {
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseBody -> {
+                                System.out.println("Error Response Body: " + responseBody);
+                                return Mono.error(new IllegalArgumentException());
+                            });
+                })
+                .bodyToMono(tClass);
+    }
     public <T> T getWithoutMono(String url,
                            Map<String, String> headers,
                            Class<T> tClass) {
@@ -150,5 +183,17 @@ public class RestService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<>() {})
                 .block();
+    }
+    public <T> Mono<T> patch(String baseUrl, String uri, Map<String, String> headers, String body, Class<T> tClass) {
+        return webClient
+                .mutate()
+                .baseUrl(baseUrl)
+                .build()
+                .patch()
+                .uri(uri)
+                .headers(headers1 -> headers1.setAll(headers))
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(tClass);
     }
 }
