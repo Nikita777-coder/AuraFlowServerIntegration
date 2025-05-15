@@ -32,6 +32,28 @@ public class RestService {
         return ans.block();
     }
 
+    public <T, B> T postWithDefaultHeaders(String url, Map<String, String> headers, String username, String pass, B body, Class<T> tClass) {
+        var ans = webClient
+                .mutate()
+                .defaultHeaders(header -> header.setBasicAuth(username, pass))
+                .build()
+                .post()
+                .uri(url)
+                .headers(httpHeaders -> httpHeaders.setAll(headers))
+                .bodyValue(body)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError(), clientResponse -> {
+                    return clientResponse.bodyToMono(String.class)
+                            .flatMap(responseBody -> {
+                                System.out.println("Error Response Body: " + responseBody);
+                                return Mono.error(new IllegalArgumentException());
+                            });
+                })
+                .bodyToMono(tClass);
+
+        return ans.block();
+    }
+
     public <T, R> T post(String baseUrl, String uri, Map<String, String> headers, R body, Class<T> tClass) {
 //        String token = getToken();
 
