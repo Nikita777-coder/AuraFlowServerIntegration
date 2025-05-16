@@ -1,9 +1,12 @@
 package system.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientRequest;
@@ -20,8 +23,26 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ZitadelRestService {
+    @Value("${web-retry.max-attempts}")
+    private int maxAttempts;
+    @Value("${web-retry.backoff.min-delay}")
+    private long minDelay;
+    @Value("${web-retry.backoff.max-delay}")
+    private long maxDelay;
+    @Value("${web-retry.backoff.multiplier}")
+    private int multiplier;
+
     private final AuthorizedRequestBuilder authorizedRequestBuilder;
     private final WebClient zitadelWebClient;
+
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T, R> T post(String baseUrl, String uri, Map<String, String> headers, R body, Class<T> tClass) {
         ClientRequest request = ClientRequest.create(HttpMethod.POST, URI.create(baseUrl + uri))
                 .headers(h -> h.setAll(headers))
@@ -49,6 +70,14 @@ public class ZitadelRestService {
         return ans;
     }
 
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T> T get(String baseUrl,
                      String path,
                      String pathVariable,
