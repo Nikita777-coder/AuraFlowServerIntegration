@@ -18,8 +18,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MeditationAiService {
     private final ZitadelRestService restService;
-    @Value("${service-configs.meditation-generator-service.auth-jwt-secret}")
-    private String token;
     @Value("${service-configs.meditation-generator-service.base-url}")
     private String baseUrl;
     @Value("${service-configs.meditation-generator-service.generate-path}")
@@ -27,22 +25,20 @@ public class MeditationAiService {
     @Value("${service-configs.meditation-generator-service.status-path}")
     private String statusUrl;
     public String generateMeditation(MeditationGenerationRequest meditationGenerationRequest) {
-        Map<String, String> headers = Map.of("Authorization", String.format("Bearer %s", token));
         return restService.post(
                 baseUrl,
                 generatePath,
-                headers,
+                Map.of(),
                 meditationGenerationRequest,
                 String.class
         );
     }
     public MeditationStatus getMeditationStatus(String id) {
-        Map<String, String> headers = Map.of("Authorization", String.format("Bearer %s", token));
         return restService.get(
              baseUrl,
              statusUrl,
                 id,
-             headers,
+             Map.of(),
              MeditationStatus.class
         );
     }

@@ -17,7 +17,6 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
-import system.extra.AuthorizedRequestBuilder;
 
 import java.time.Duration;
 
@@ -76,12 +75,8 @@ public class ZitadelWebClientConfigs {
     }
 
     @Bean
-    public WebClient zitadelWebClient(AuthorizedRequestBuilder authBuilder) {
+    public WebClient zitadelWebClient() {
         return WebClient.builder()
-                .filter((request, next) ->
-                        authBuilder.withAuthHeadersReactive(request)
-                                .flatMap(next::exchange)
-                )
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.create().responseTimeout(Duration.ofSeconds(responseTimeout))
                 ))
