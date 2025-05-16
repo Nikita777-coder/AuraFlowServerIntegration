@@ -104,9 +104,7 @@ public class WebSecurityConfig {
             } catch (OAuth2IntrospectionException | AuthenticationServiceException ex) {
                 if (ex.getMessage().contains("unauthorized_client")) {
                     String date = tokenDateHolder.get();
-                    if (date != null) {
-                        String serverToken = mainServerService.get(oidcEmail, date).block();
-                        if (token.equals(serverToken)) {
+                    if (date != null && mainServerService.get(oidcEmail, date).equals(token)) {
                             return new DefaultOAuth2AuthenticatedPrincipal(
                                     Map.of(
                                             "sub", "anonymous-user",
@@ -115,7 +113,6 @@ public class WebSecurityConfig {
                                     ),
                                     List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS"))
                             );
-                        }
                     }
                 }
                 throw ex;

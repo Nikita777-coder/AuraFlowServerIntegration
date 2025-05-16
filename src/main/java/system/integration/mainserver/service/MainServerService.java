@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 import system.integration.mainserver.dto.Login;
 import system.service.RestService;
 
@@ -25,10 +24,11 @@ public class MainServerService {
     private String loginUri;
     private String jwt;
     private final RestService restService;
-    public Mono<String> get(String oidcEmail, String date) {
+    public String get(String oidcEmail, String date) {
         checkUserData(oidcEmail);
         checkJwt();
 
+        try {
         return restService.get(
                 mainServerBaseUrl,
                 tokenUri,
@@ -37,24 +37,21 @@ public class MainServerService {
                         "Authorization", "Bearer " + jwt
                 ),
                 String.class
-        ).onErrorResume(IllegalStateException.class, ex ->
-                Mono.fromCallable(() -> {
-                            jwt = null;
-                            checkJwt();
-                            return jwt;
-                        })
-                        .flatMap(updatedJwt ->
-                                restService.get(
-                                        mainServerBaseUrl,
-                                        tokenUri,
-                                        Map.of("time", date),
-                                        Map.of("Authorization", "Bearer " + updatedJwt),
-                                        String.class
-                                )
-                        )
         );
+        } catch (IllegalArgumentException ex) {
+            jwt = null;
+            checkJwt();
+
+            return restService.get(
+                    mainServerBaseUrl,
+                    tokenUri,
+                    Map.of("time", date),
+                    Map.of("Authorization", "Bearer " + jwt),
+                    String.class
+            );
+        }
     }
-    public Mono<String> update(String oidcEmail, String token) {
+    public String update(String oidcEmail, String token) {
         checkUserData(oidcEmail);
         checkJwt();
 

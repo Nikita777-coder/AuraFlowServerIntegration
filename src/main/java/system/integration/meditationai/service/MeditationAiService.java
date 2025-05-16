@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import system.extra.AuthorizedRequestBuilder;
 import system.integration.meditationai.dto.MeditationGenerationRequest;
 import system.integration.meditationai.dto.MeditationStatus;
 import system.service.RestService;
+import system.service.ZitadelRestService;
 
 import java.util.Map;
 import java.util.UUID;
@@ -15,12 +17,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class MeditationAiService {
-    private final WebClient zitadelWebClient;
-    private RestService restService;
-    @PostConstruct
-    private void initRest() {
-        restService = new RestService(zitadelWebClient);
-    }
+    private final ZitadelRestService restService;
     @Value("${service-configs.meditation-generator-service.auth-jwt-secret}")
     private String token;
     @Value("${service-configs.meditation-generator-service.base-url}")

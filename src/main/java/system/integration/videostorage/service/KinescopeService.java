@@ -53,7 +53,7 @@ public class KinescopeService {
                 Status.PARSING
         );
     }
-    public Mono<KinescopeVideoDataWrapper> get(UUID videoId) {
+    public KinescopeVideoDataWrapper get(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();
 
         return restService.get(
