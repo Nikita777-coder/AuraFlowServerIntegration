@@ -57,6 +57,16 @@ server:
   integration:
     fixed-rate-time: ${FIXED_RATE_TIME}
 
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: false
+  endpoint:
+    health:
+      show-details: always
+
 resilience4j:
   circuitbreaker:
     configs:
