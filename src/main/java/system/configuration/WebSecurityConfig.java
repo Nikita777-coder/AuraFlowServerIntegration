@@ -70,6 +70,7 @@ public class WebSecurityConfig {
                             if (date != null) {
                                 tokenDateHolder.set(date);
                             }
+                            System.out.printf("Method %s\n", request.getRequestURI());
                             filterChain.doFilter(request, response);
                         } finally {
                             tokenDateHolder.clear();
@@ -104,6 +105,7 @@ public class WebSecurityConfig {
             } catch (OAuth2IntrospectionException | AuthenticationServiceException ex) {
                 if (ex.getMessage().contains("unauthorized_client")) {
                     String date = tokenDateHolder.get();
+                    System.out.printf("%s:%s\n", date, token);
                     if (date != null && mainServerService.get(oidcEmail, date).equals(token)) {
                             return new DefaultOAuth2AuthenticatedPrincipal(
                                     Map.of(
