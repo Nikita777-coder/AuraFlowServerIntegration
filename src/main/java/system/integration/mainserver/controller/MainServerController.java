@@ -15,6 +15,7 @@ public class MainServerController {
     @GetMapping
     public String getToken(@RequestParam String email, @RequestParam String date) {
         var ans = mainServerService.get(email, date);
+        System.out.printf("Method /main-server get, ans: %s\n", ans);
         return ans;
     }
 }
