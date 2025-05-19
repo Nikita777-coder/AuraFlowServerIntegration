@@ -24,8 +24,8 @@ public class YookassaService {
     private String apiKey;
     @Value("${service-configs.yookassa.shop-id}")
     private String shopId;
-    @Value("${service-configs.yookassa.method-type}")
-    private String methodType;
+//    @Value("${service-configs.yookassa.method-type}")
+//    private String methodType;
     @Value("${service-configs.yookassa.currency}")
     private String currency;
     @Value("${service-configs.yookassa.description}")
@@ -42,21 +42,12 @@ public class YookassaService {
                 currency
         ));
         paymentRequest.setCapture(true);
-        paymentRequest.setMethodType(new MethodType(methodType));
+//        paymentRequest.setMethodType(new MethodType(methodType));
         paymentRequest.setDescription(description);
 
         Confirmation confirmation = new Confirmation();
         confirmation.setType("embedded");
         paymentRequest.setConfirmation(confirmation);
-
-        ObjectMapper mapper = new ObjectMapper();
-        String json = null;
-        try {
-            json = mapper.writeValueAsString(paymentRequest);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        System.out.println(json);
 
         return restService.postWithDefaultHeaders(
                 yookassaBaseUrl,

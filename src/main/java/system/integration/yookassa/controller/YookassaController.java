@@ -15,6 +15,7 @@ public class YookassaController {
     private final YookassaService yookassaService;
     @PostMapping
     public PaymentData makePayment() {
-        return yookassaService.makePayment();
+        var ans = yookassaService.makePayment();
+        return ans;
     }
 }
