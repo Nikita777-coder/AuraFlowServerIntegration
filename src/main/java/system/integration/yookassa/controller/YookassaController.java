@@ -16,10 +16,8 @@ import java.util.UUID;
 public class YookassaController {
     private final YookassaService yookassaService;
     @PostMapping
-    public PaymentData makePayment() throws JsonProcessingException {
+    public PaymentData makePayment() {
         var ans = yookassaService.makePayment();
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println(objectMapper.writeValueAsString(ans));
         return ans;
     }
 }
