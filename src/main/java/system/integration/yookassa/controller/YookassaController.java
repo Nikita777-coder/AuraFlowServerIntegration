@@ -1,5 +1,7 @@
 package system.integration.yookassa.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import system.integration.yookassa.dto.PaymentData;
@@ -15,10 +17,7 @@ public class YookassaController {
     private final YookassaService yookassaService;
     @PostMapping
     public PaymentData makePayment() {
-        return yookassaService.makePayment();
-    }
-    @GetMapping("/status")
-    public TransactionStatus getTransactionStatus(@RequestParam("payment-id") UUID id) {
-        throw new RuntimeException();
+        var ans = yookassaService.makePayment();
+        return ans;
     }
 }
