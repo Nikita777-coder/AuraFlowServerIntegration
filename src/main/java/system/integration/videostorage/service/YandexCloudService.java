@@ -23,13 +23,21 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 @RequiredArgsConstructor
 public class YandexCloudService {
     private final KinescopeService kinescopeService;
     private final Path root = Paths.get("uploads");
+    private final Map<UUID, VideoStorageUploadResponse> videoStatuses = new ConcurrentHashMap<>();
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     @Value("${service-configs.yandex-cloud.endpoint}")
     private String ENDPOINT;
@@ -56,52 +64,80 @@ public class YandexCloudService {
                 .region(Region.of("ru-central1"))
                 .build();
     }
-    public VideoStorageUploadResponse upload(VideoStorageUploadRequest videoStorageUploadRequest) {
+    public UUID upload(VideoStorageUploadRequest videoStorageUploadRequest) {
         if (videoStorageUploadRequest.getUploadVideo() == null && videoStorageUploadRequest.getSourceLink() == null) {
             throw new IllegalArgumentException("you must fill meditation from local storage or provide link to it");
         }
 
+        UUID taskId = UUID.randomUUID();
+        videoStatuses.put(taskId, new VideoStorageUploadResponse());
+
         if (videoStorageUploadRequest.getUploadVideo() != null) {
-            return uploadVideo(videoStorageUploadRequest);
+            executorService.submit(() -> uploadVideo(taskId, videoStorageUploadRequest));
+            return taskId;
         }
 
-        return uploadByLink(videoStorageUploadRequest);
+        executorService.submit(() -> uploadByLink(taskId, videoStorageUploadRequest));
+        return taskId;
     }
-    public VideoStorageUploadResponse loadFromKinescope(VideoStorageUploadResponse data) {
-        var d = kinescopeService.getWithAdditionalInfo(data.getUploadResponse().getData().getId());
+    public VideoStorageUploadResponse getData(UUID id) {
+        var shallowCopy = videoStatuses.get(id);
+        if (videoStatuses.get(id).getStatus() == Status.READY) {
+            shallowCopy = new VideoStorageUploadResponse();
 
-        if (d.getData().getAssets().size() < 2) {
-            throw new IllegalArgumentException("meditation is not uploaded");
+            shallowCopy.setStatus(Status.valueOf(videoStatuses.get(id).getStatus().toString()));
+            shallowCopy.setWasUploadFromUrl(videoStatuses.get(id).isWasUploadFromUrl());
+            shallowCopy.setUploadResponse(new KinescopeUploadResponse());
+            shallowCopy.getUploadResponse().setData(new KinescopeData());
+            shallowCopy.getUploadResponse().getData().setTitle(videoStatuses.get(id).getUploadResponse().getData().getTitle());
+            shallowCopy.getUploadResponse().getData().setId(UUID.fromString(videoStatuses.get(id).getUploadResponse().getData().getId().toString()));
+            shallowCopy.getUploadResponse().getData().setDescription(videoStatuses.get(id).getUploadResponse().getData().getDescription());
+            shallowCopy.getUploadResponse().getData().setStatus(videoStatuses.get(id).getUploadResponse().getData().getStatus());
+            shallowCopy.getUploadResponse().getData().setEmbedLink(videoStatuses.get(id).getUploadResponse().getData().getEmbedLink());
+            shallowCopy.getUploadResponse().getData().setCreatedAt(LocalDateTime.parse(videoStatuses.get(id).getUploadResponse().getData().getCreatedAt().toString()));
+
+            videoStatuses.remove(id);
         }
 
-        InputStream in;
-        try {
-            in = new URL(d.getData().getAssets().get(1).getDownloadLink()).openStream();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return shallowCopy;
+    }
+    private void loadFromKinescope(VideoStorageUploadResponse data) {
+        for (var value: videoStatuses.entrySet()) {
+            if (value.getValue().getStatus() == Status.PARSED) {
+                var d = kinescopeService.getWithAdditionalInfo(data.getUploadResponse().getData().getId());
 
-        if (!Files.exists(root)) {
-            try {
-                Files.createDirectories(root);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+                if (d.getData().getAssets().size() < 2) {
+                    throw new IllegalArgumentException("meditation is not uploaded");
+                }
+
+                InputStream in;
+                try {
+                    in = new URL(d.getData().getAssets().get(1).getDownloadLink()).openStream();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if (!Files.exists(root)) {
+                    try {
+                        Files.createDirectories(root);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                // Получаем имя файла
+                String fileName = data.getUploadResponse().getData().getTitle();
+                if (!fileName.contains(".mp4")) {
+                    fileName += ".mp4";
+                }
+
+                Path targetLocation = root.resolve(fileName);
+
+                copyFileByLink(in, targetLocation, value.getKey());
+
+                kinescopeService.delete(data.getUploadResponse().getData().getId());
             }
         }
-
-        // Получаем имя файла
-        String fileName = data.getUploadResponse().getData().getTitle();
-        if (!fileName.contains(".mp4")) {
-            fileName += ".mp4";
-        }
-
-        Path targetLocation = root.resolve(fileName);
-
-        copyFileByLink(in, targetLocation);
-
-        kinescopeService.delete(data.getUploadResponse().getData().getId());
-
-        return data;
     }
     public void delete(String link, UUID id) {
         s3.deleteObject(DeleteObjectRequest
@@ -129,7 +165,7 @@ public class YandexCloudService {
             throw new RuntimeException("error reading object", ioEx);
         }
     }
-    private VideoStorageUploadResponse uploadVideo(VideoStorageUploadRequest videoStorageUploadRequest) {
+    private void uploadVideo(UUID taskId, VideoStorageUploadRequest videoStorageUploadRequest) {
         if (!Files.exists(root)) {
             try {
                 Files.createDirectories(root);
@@ -142,41 +178,51 @@ public class YandexCloudService {
         Path targetLocation = root.resolve(fileName);
 
         try {
-            var ans = copyFile(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation);
-            ans.getUploadResponse().getData().setTitle(videoStorageUploadRequest.getTitle());
+            copyFile(videoStorageUploadRequest.getUploadVideo().getInputStream(), targetLocation, taskId);
+            videoStatuses.get(taskId).getUploadResponse().getData().setTitle(videoStorageUploadRequest.getTitle());
 
             if (videoStorageUploadRequest.getDescription() != null) {
-                ans.getUploadResponse().getData().setDescription(videoStorageUploadRequest.getDescription());
+                videoStatuses.get(taskId).getUploadResponse().getData().setDescription(videoStorageUploadRequest.getDescription());
             }
 
-            return ans;
+            videoStatuses.get(taskId).setStatus(Status.READY);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private VideoStorageUploadResponse copyFile(
+    private void copyFile(
             InputStream in,
-            Path targetLocation
+            Path targetLocation,
+            UUID taskId
     ) {
         try {
+            videoStatuses.get(taskId).setStatus(Status.SYSTEM_FILE_COPYING);
             Files.copy(in, targetLocation);
         } catch (FileAlreadyExistsException ex) {
 
         }
         catch (IOException e) {
+            videoStatuses.get(taskId).setStatus(Status.ERROR);
             throw new RuntimeException(e);
         }
 
         File videoFile = new File(targetLocation.toString());
-        return upload(videoFile);
+        videoStatuses.get(taskId).getUploadResponse().setData(new KinescopeData());
+        videoStatuses.get(taskId).getUploadResponse().getData().setEmbedLink(
+                String.format("%s/%s/%s/%s", ENDPOINT, BUCKET_NAME, FOLDER_NAME, videoFile.getName())
+        );
+
+        upload(videoFile, taskId);
     }
 
     private void copyFileByLink(
             InputStream in,
-            Path targetLocation
+            Path targetLocation,
+            UUID taskId
     ) {
         try {
+            videoStatuses.get(taskId).setStatus(Status.SYSTEM_FILE_COPYING);
             Files.copy(in, targetLocation);
         } catch (FileAlreadyExistsException ex) {
 
@@ -186,10 +232,11 @@ public class YandexCloudService {
         }
 
         File videoFile = new File(targetLocation.toString());
-        uploadFromLink(videoFile);
+        uploadFromLink(videoFile, taskId);
     }
 
-    private VideoStorageUploadResponse uploadByLink(VideoStorageUploadRequest videoStorageUploadRequest) {
+    private void uploadByLink(UUID taskId, VideoStorageUploadRequest videoStorageUploadRequest) {
+        videoStatuses.get(taskId).setStatus(Status.PARSING);
         var b = kinescopeService.upload(videoStorageUploadRequest);
 
         String fileName = videoStorageUploadRequest.getTitle();
@@ -201,11 +248,12 @@ public class YandexCloudService {
                 String.format("%s/%s/%s/%s", ENDPOINT, BUCKET_NAME, FOLDER_NAME, fileName)
         );
         b.getUploadResponse().getData().setTitle(videoStorageUploadRequest.getTitle());
-
-        return b;
+        b.setStatus(Status.PARSED);
+        videoStatuses.put(taskId, b);
     }
-    private VideoStorageUploadResponse upload(File videoFile) {
+    private void upload(File videoFile, UUID taskId) {
         String objectKey = FOLDER_NAME + "/" + videoFile.getName();
+        videoStatuses.get(taskId).setStatus(Status.LOADING_TO_STORAGE);
 
        s3.putObject(
                 PutObjectRequest.builder()
@@ -214,22 +262,9 @@ public class YandexCloudService {
                         .build(),
                 Paths.get(videoFile.getAbsolutePath())
         );
-
-        var kinescopeUploadRequest = new KinescopeUploadResponse();
-        kinescopeUploadRequest.setData(new KinescopeData());
-
-        var b = new VideoStorageUploadResponse(
-                kinescopeUploadRequest,
-                false
-        );
-
-        b.getUploadResponse().getData().setEmbedLink(
-                String.format("%s/%s/%s/%s", ENDPOINT, BUCKET_NAME, FOLDER_NAME, videoFile.getName())
-        );
-
-        return b;
     }
-    private void uploadFromLink(File videoFile) {
+    private void uploadFromLink(File videoFile, UUID taskId) {
+        videoStatuses.get(taskId).setStatus(Status.LOADING_TO_STORAGE);
         String objectKey = FOLDER_NAME + "/" + videoFile.getName();
 
         s3.putObject(
@@ -239,6 +274,8 @@ public class YandexCloudService {
                         .build(),
                 Paths.get(videoFile.getAbsolutePath())
         );
+
+        videoStatuses.get(taskId).setStatus(Status.READY);
     }
     private String extractObjectKeyFromLink(String link) {
         var ob =  link.split(ENDPOINT + '/' + BUCKET_NAME + '/');
