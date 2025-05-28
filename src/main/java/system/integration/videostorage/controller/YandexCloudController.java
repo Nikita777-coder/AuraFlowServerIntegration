@@ -46,15 +46,14 @@ public class YandexCloudController {
 
     @GetMapping("/get-data-info")
     @ResponseBody
-    public VideoStorageUploadResponse getData(@RequestParam UUID taskId) {
+    public VideoStorageUploadResponse getData(@RequestParam("task-id") UUID taskId) {
         return yandexCloudService.getData(taskId);
     }
 
     @DeleteMapping
     @ResponseBody
-    public void deleteVideoByLink(@RequestParam(name = "video-link") String link,
-                                    @RequestParam(name = "video-id", required = false) UUID id) {
-        yandexCloudService.delete(link, id);
+    public void deleteVideoByLink(@RequestParam(name = "video-link") String link) {
+        yandexCloudService.delete(link);
     }
 
     @GetMapping
