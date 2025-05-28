@@ -41,14 +41,16 @@ public class KinescopeService {
             headers.put("X-File-Name", "meditation.mp4");
             return new VideoStorageUploadResponse(
                     restService.post(kinescopeLoadVideoUrl, headers, kinescopeUploadRequest.getUploadVideo(), KinescopeUploadResponse.class),
-                    false
+                    false,
+                    Status.PARSING
             );
         }
 
         headers.put("X-Video-URL", kinescopeUploadRequest.getSourceLink());
         return new VideoStorageUploadResponse(
                 restService.post(kinescopeLoadVideoUrl, headers, KinescopeUploadResponse.class),
-                true
+                true,
+                Status.PARSING
         );
     }
     public Mono<KinescopeVideoDataWrapper> get(UUID videoId) {
