@@ -44,3 +44,5 @@ logging:
     org.springframework.security.oauth2: DEBUG
 server:
   port: ${PORT}
+  integration:
+    fixed-rate-time: ${FIXED_RATE_TIME}
