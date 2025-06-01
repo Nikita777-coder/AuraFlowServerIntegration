@@ -6,9 +6,14 @@ spring:
       max-file-size: ${MULTIPART_MAX_FILE_SIZE}
       max-request-size: ${MULTIPART_MAX_REQUEST_SIZE}
 service-configs:
-  keycloak:
-    issuer-uri: ${KEYCLOAK_ISSUER_URI}
-    jwt-set-uri: ${service-configs.keycloak.issuer-uri}/protocol/openid-connect/certs
+  zitadel:
+    issuer-uri: ${ZITADEL_ISSUER_URI}
+    jwt-set-uri: ${service-configs.zitadel.issuer-uri}/.well-known/openid-configuration/jwks
+    id: ${REGISTRATION_ID}
+    client-id: ${ZITADEL_CLIENT_ID}
+    client-secret: ${ZITADEL_CLIENT_SECRET}
+    scope: ${ZITADEL_SCOPE}
+    token-uri: ${service-configs.zitadel.issuer-uri}/oauth/v2/token
   web-client:
     time-response: ${TIME_RESPONSE}
   kinescope:

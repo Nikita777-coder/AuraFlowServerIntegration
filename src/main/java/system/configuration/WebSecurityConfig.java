@@ -15,7 +15,7 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
-    @Value("${service-configs.keycloak.jwt-set-uri}")
+    @Value("${service-configs.zitadel.jwt-set-uri}")
     private String jwtSetUri;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
