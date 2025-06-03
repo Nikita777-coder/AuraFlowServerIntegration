@@ -6,9 +6,15 @@ spring:
       max-file-size: ${MULTIPART_MAX_FILE_SIZE}
       max-request-size: ${MULTIPART_MAX_REQUEST_SIZE}
 service-configs:
+  main-server:
+    oidc-email: ${MAIN_SERVER_OIDC_EMAIL}
+    oidc-password: ${MAIN_SERVER_OIDC_PASSWORD}
+    base-url: ${MAIN_SERVER_BASE_URL}
+    token-uri: ${MAIN_SERVER_TOKEN_URI}
+    login-uri: ${MAIN_SERVER_LOGIN_URI}
   zitadel:
     issuer-uri: ${ZITADEL_ISSUER_URI}
-    jwt-set-uri: ${service-configs.zitadel.issuer-uri}/.well-known/openid-configuration/jwks
+    introspect-uri: ${service-configs.zitadel.issuer-uri}/oauth/v2/introspect
     id: ${REGISTRATION_ID}
     client-id: ${ZITADEL_CLIENT_ID}
     client-secret: ${ZITADEL_CLIENT_SECRET}
