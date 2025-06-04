@@ -34,7 +34,6 @@ service-configs:
     secret-key: ${YANDEX_CLOUD_SECRET_KEY}
     video-folder: ${YANDEX_CLOUD_VIDEO_FOLDER}
   meditation-generator-service:
-    auth-jwt-secret: ${MEDITATION_GENERATOR_SERVICE_SECRET}
     base-url: ${MEDITATION_GENERATOR_SERVICE_BASE_URL}
     generate-path: ${MEDITATION_GENERATOR_SERVICE_GENERATE_PATH}
     status-path: ${MEDITATION_GENERATOR_SERVICE_STATUS_PATH}
@@ -57,3 +56,26 @@ server:
   port: ${PORT}
   integration:
     fixed-rate-time: ${FIXED_RATE_TIME}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 60
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        minimumNumberOfCalls: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+    instances:
+      convert-service:
+        baseConfig: default
+
+web-retry:
+  max-attempts: 10
+  backoff:
+    min-delay: 50
+    multiplier: 2
+    max-delay: 10000

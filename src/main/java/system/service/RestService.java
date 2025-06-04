@@ -1,10 +1,13 @@
 package system.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientRequest;
@@ -21,7 +24,25 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RestService {
+    @Value("${web-retry.max-attempts}")
+    private int maxAttempts;
+    @Value("${web-retry.backoff.min-delay}")
+    private long minDelay;
+    @Value("${web-retry.backoff.max-delay}")
+    private long maxDelay;
+    @Value("${web-retry.backoff.multiplier}")
+    private int multiplier;
+
     private final WebClient webClient;
+
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T, B> T post(String url, Map<String, String> headers, B body, Class<T> tClass) {
         var ans = webClient.post()
                 .uri(url)
@@ -40,6 +61,14 @@ public class RestService {
         return ans.block();
     }
 
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T> T get(String url, Map<String, String> headers, Class<T> tClass) {
         return webClient
                 .get()
@@ -50,6 +79,14 @@ public class RestService {
                 .block();
     }
 
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T, B> T postWithDefaultHeaders(String url, Map<String, String> headers, String username, String pass, B body, Class<T> tClass) {
         var ans = webClient
                 .mutate()
@@ -72,6 +109,14 @@ public class RestService {
         return ans.block();
     }
 
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T> T post(String url, Map<String, String> headers, Class<T> tClass) {
         var ans = webClient.post()
                 .uri(url)
@@ -81,6 +126,15 @@ public class RestService {
 
         return ans.block();
     }
+
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T> T getWithoutMono(String url,
                            Map<String, String> headers,
                            Class<T> tClass) {
@@ -93,6 +147,14 @@ public class RestService {
                 .block();
     }
 
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public void delete(String url, Map<String, String> headers) {
         webClient
                 .delete()
@@ -102,6 +164,15 @@ public class RestService {
                 .bodyToMono(new ParameterizedTypeReference<>() {})
                 .block();
     }
+
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T> T patch(String baseUrl, String uri, Map<String, String> headers, String body, Class<T> tClass) {
         return webClient
                 .mutate()
@@ -117,6 +188,14 @@ public class RestService {
                 .block();
     }
 
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T> T get(String baseUrl, String uri, Map<String, String> params, Map<String, String> headers, Class<T> tClass) {
         return webClient
                 .mutate()
@@ -134,6 +213,14 @@ public class RestService {
                 .block();
     }
 
+    @Retryable(
+            maxAttemptsExpression = "maxAttempts",
+            backoff = @Backoff(
+                    delayExpression = "minDelay",
+                    multiplierExpression = "multiplier",
+                    maxDelayExpression = "maxDelay"
+            )
+    )
     public <T, R> T post(String baseUrl, String uri, Map<String, String> headers, R body, Class<T> tClass) {
         return webClient
                 .mutate()
