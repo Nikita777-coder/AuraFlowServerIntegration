@@ -14,7 +14,7 @@ import system.integration.mainserver.service.MainServerService;
 public class MainServerController {
     private final MainServerService mainServerService;
     @GetMapping
-    public Mono<String> getToken(@RequestParam String email, @RequestParam String date) {
+    public String getToken(@RequestParam String email, @RequestParam String date) {
         return mainServerService.get(email, date);
     }
 }

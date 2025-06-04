@@ -54,7 +54,7 @@ public class KinescopeController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public Mono<KinescopeVideoDataWrapper> get(@RequestParam(name = "video-id") UUID kinescopeVideoId)  {
+    public KinescopeVideoDataWrapper get(@RequestParam(name = "video-id") UUID kinescopeVideoId)  {
         return kinescopeService.get(kinescopeVideoId);
     }
 

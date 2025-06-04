@@ -5,16 +5,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 import system.integration.videostorage.DTOMapper;
-import system.integration.videostorage.dto.KinescopeUploadResponse;
 import system.integration.videostorage.dto.Status;
 import system.integration.videostorage.dto.VideoStorageUploadResponse;
-
-import java.time.Duration;
-import java.util.UUID;
 
 @Service
 @EnableAsync
@@ -27,32 +20,16 @@ public class GetDataFromKinescopeRegular {
     @Async
     @Scheduled(fixedRateString = "${server.integration.fixed-rate-time}")
     public void fetchInfoAboutUploadingToKinescope() {
-        Flux.fromIterable(KinescopeIds.getAll().entrySet())
-                .flatMap(entry -> {
-                    UUID videoId = entry.getKey();
-                    UUID metadataKey = entry.getValue();
+        for (var val: KinescopeIds.getAll().entrySet()) {
+            var ans = kinescopeService.get(val.getKey());
 
-                    return kinescopeService.get(videoId)
-                            .filter(wrapper -> "done".equals(wrapper.getData().getStatus()))
-                            .flatMap(wrapper -> {
-                                VideoStorageUploadResponse shallowCopy =
-                                        VideoStorageUploadResponse.getShallowCopy(KinescopeIds.getData(metadataKey));
-                                shallowCopy.setStatus(Status.PARSED);
-                                KinescopeIds.deleteId(videoId);
+            if (ans != null && ans.getData().getStatus().equals("done")) {
+                var shallowCopy = VideoStorageUploadResponse.getShallowCopy(KinescopeIds.getData(val.getValue()));
+                shallowCopy.setStatus(Status.PARSED);
 
-                                return Mono.fromRunnable(() ->
-                                        yandexCloudService.loadFromKinescope(metadataKey, shallowCopy)
-                                );
-                            });
-
-                })
-                .subscribeOn(Schedulers.boundedElastic())
-                .subscribe(
-                        success -> {},
-                        error -> {
-                            System.err.println("❌ Ошибка в процессе загрузки: " + error.getMessage());
-                            error.printStackTrace();
-                        }
-                );
+                KinescopeIds.deleteId(val.getKey());
+                yandexCloudService.loadFromKinescope(val.getValue(), shallowCopy);
+            }
+        }
     }
 }
