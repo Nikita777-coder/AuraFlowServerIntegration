@@ -55,6 +55,7 @@ public class KinescopeService {
     }
     public KinescopeVideoDataWrapper get(UUID videoId) {
         Map<String, String> headers = getDefaultHeaders();
+        System.out.println("kenscope get query");
 
         return restService.get(
                 getUriWithVideoIdAsPathVariable(kinescopeV1VideoUrl, videoId),

@@ -20,6 +20,7 @@ public class GetDataFromKinescopeRegular {
     @Async
     @Scheduled(fixedRateString = "${server.integration.fixed-rate-time}")
     public void fetchInfoAboutUploadingToKinescope() {
+        System.out.println("fetchInfoAboutUploadingToKinescope work");
         for (var val: KinescopeIds.getAll().entrySet()) {
             var ans = kinescopeService.get(val.getKey());
 
